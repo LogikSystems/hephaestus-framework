@@ -1,0 +1,18 @@
+services:
+  hephaestus:
+    volumes:
+      - '.:/home/${APP_PHP_SUPERVISOR_USER}/hephaestus'
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        APP_TIMEZONE: $APP_TIMEZONE
+        APP_PHP_SUPERVISOR_USER: $APP_PHP_SUPERVISOR_USER
+    env_file:
+      - .env
+    tty: true
+    networks:
+      - hephaestus
+networks:
+  hephaestus:
+    driver: bridge
