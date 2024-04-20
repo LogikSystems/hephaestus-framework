@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Bot\InteractionHandlers;
+namespace App\Framework\InteractionHandlers\ApplicationCommands\Drivers;;
 
 interface ISlashCommandsDriver {
 

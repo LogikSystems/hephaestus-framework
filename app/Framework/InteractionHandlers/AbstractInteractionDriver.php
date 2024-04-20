@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Bot\InteractionHandlers;
+namespace App\Framework\InteractionHandlers;
 
-use App\Bot\InteractionHandlers\HandledInteractionType;
 use App\Contracts\InteractionDriver;
 use App\Contracts\InteractionHandler;
+use App\Framework\Enums\HandledInteractionType;
 use App\Hephaestus;
 use Discord\Parts\Interactions\Interaction;
 use Illuminate\Support\Collection;

@@ -1,11 +1,8 @@
 <?php
 
-namespace App\Bot\InteractionHandlers\SlashCommands;
+namespace App\Framework\InteractionHandlers\ApplicationCommands;
 
-use App\Bot\InteractionHandlers\HandledInteractionType;
 use App\Contracts\InteractionHandler;
-use App\Hephaestus;
-use Discord\Discord;
 use Discord\Parts\Interactions\Command\Command;
 use Discord\Parts\Interactions\Interaction;
 
@@ -31,7 +28,13 @@ implements InteractionHandler
      */
     public string $name;
 
+    /**
+     * @inheritdoc
+     */
     public string $description;
 
+    /**
+     * @inheritdoc
+     */
     public abstract function handle(Interaction $interaction): void;
 }

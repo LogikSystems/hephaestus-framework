@@ -1,16 +1,14 @@
 <?php
 
-namespace App\Bot\InteractionHandlers;
+namespace App\Framework;
 
 use App\Hephaestus;
 use App\Contracts\InteractionHandler;
+use App\Framework\Enums\HandledInteractionType;
 use Discord\Builders\MessageBuilder;
-use Discord\InteractionType;
 use Discord\Parts\Interactions\Interaction;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Reflector;
 use Monolog\Level;
-use Pest\Arch\Support\ReflectionClassForFunction;
 
 class InteractionDispatcher implements InteractionHandler
 {

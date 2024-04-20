@@ -2,15 +2,10 @@
 
 namespace App\Providers;
 
-use App\Bot\InteractionHandlers\AbstractSlashCommandsDriver;
-use App\Bot\InteractionHandlers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
 use App\Hephaestus;
-use Illuminate\Console\OutputStyle;
 use Illuminate\Support\ServiceProvider;
-use React\Stream\ReadableResourceStream;
-use React\Stream\WritableResourceStream;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class AppServiceProvider extends ServiceProvider

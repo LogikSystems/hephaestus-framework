@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Bot\InteractionHandlers\MessageComponents;
+namespace App\Framework\InteractionHandlers\MessageComponents;
 
 use App\Contracts\InteractionHandler;
 use Discord\Parts\Interactions\Interaction;

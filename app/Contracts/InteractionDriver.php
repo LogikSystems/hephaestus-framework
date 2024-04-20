@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-use App\Bot\InteractionHandlers\HandledInteractionType;
+use App\Framework\Enums\HandledInteractionType;
 use Discord\Parts\Interactions\Interaction;
 
 interface InteractionDriver {

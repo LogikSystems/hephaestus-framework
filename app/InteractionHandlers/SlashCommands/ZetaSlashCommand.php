@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Bot\InteractionHandlers\SlashCommands;
+namespace App\InteractionHandlers\SlashCommands;
 
-use App\Bot\InteractionHandlers\HandledInteractionType;
-use App\Bot\InteractionHandlers\SlashCommands\AbstractSlashCommand;
+use App\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
 use App\Hephaestus;
 use Discord\Builders\MessageBuilder;
 use Discord\Helpers\Collection;
@@ -23,6 +22,9 @@ class ZetaSlashCommand extends AbstractSlashCommand
      */
     public string $description = "Affiche l'aide";
 
+    /**
+     * @inheritdoc
+     */
     public int $type = Command::CHAT_INPUT;
 
     public function handle(Interaction $interaction): void

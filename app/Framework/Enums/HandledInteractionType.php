@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Bot\InteractionHandlers;
+namespace App\Framework\Enums;
 
 use Discord\InteractionType;
 

@@ -1,24 +1,26 @@
 <?php
 
 
-namespace App\Bot\InteractionHandlers;
+namespace App\Framework;
 
-use App\Bot\InteractionHandlers\HandledInteractions;
-use App\Bot\InteractionHandlers\MessageComponents\AbstractMessageComponent;
-use App\Bot\InteractionHandlers\SlashCommands\AbstractSlashCommand;
-use App\Contracts\InteractionDriver;
+
 use App\Contracts\InteractionHandler;
+use App\Framework\Enums\HandledInteractionType;
+use App\Framework\InteractionHandlers\AbstractInteractionDriver;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
+use App\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\MessageComponents\AbstractMessageComponent;
+use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
 use App\Hephaestus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use PHPUnit\Util\InvalidDirectoryException;
 
 use Illuminate\Support\Str;
 use Monolog\Level;
 use ReflectionClass;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  *
@@ -57,10 +59,9 @@ class InteractionReflectionLoader
             ->toArray();
     }
 
-    protected function getClasses(HandledInteractionType $type): array
+    public function getClasses(HandledInteractionType $type): array
     {
         $pathName = $this->resolvePathName($type);
-
         if (!File::isDirectory($pathName)) {
             Log::warning("No directory found for Handler Type {$type->name}, tried {$pathName}. Do the directory exists ?", [$type, $pathName]);
             return [];
@@ -71,12 +72,12 @@ class InteractionReflectionLoader
             ->all();
     }
 
-    protected function makePathName(string $string)
+    public function makePathName(string $string)
     {
-        return app_path("Bot" . DIRECTORY_SEPARATOR . "InteractionHandlers" . DIRECTORY_SEPARATOR . $string);
+        return app_path("InteractionHandlers" . DIRECTORY_SEPARATOR . $string);
     }
 
-    protected function resolvePathName(HandledInteractionType $type)
+    public function resolvePathName(HandledInteractionType $type)
     {
         return match ($type) {
             HandledInteractionType::APPLICATION_COMMAND                 =>  $this->makePathName("SlashCommands"),
@@ -90,7 +91,7 @@ class InteractionReflectionLoader
     /**
      *
      */
-    protected function resolveAbstraction(HandledInteractionType $type): mixed
+    public function resolveAbstraction(HandledInteractionType $type): mixed
     {
         return match ($type) {
             HandledInteractionType::APPLICATION_COMMAND                 =>  AbstractSlashCommand::class,
@@ -101,9 +102,10 @@ class InteractionReflectionLoader
     /**
      * Extract classes from the provided application path.
      */
-    protected function extractClasses(HandledInteractionType $type): Collection
+    public function extractClasses(HandledInteractionType $type): Collection
     {
         $path = $this->resolvePathName($type);
+        // dd(File::allFiles($path), $path);
         $classes = collect(File::allFiles($path))
             ->map(function ($file) {
                 $relativePath = str_replace(
@@ -129,10 +131,12 @@ class InteractionReflectionLoader
             })
             ->filter(function ($strClass) use ($type) {
                 $class = new ReflectionClass($strClass);
+
                 return !$class->isAbstract()
                     && $class->implementsInterface(InteractionHandler::class)
                     && $class->isSubclassOf($this->resolveAbstraction($type));
-            });
+            })
+            ;
         $resolvedCount = count($classes);
         if (!$classes->count()) {
             $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
@@ -172,7 +176,7 @@ class InteractionReflectionLoader
     }
 
 
-    // protected function bindApplicationCommands()
+    // public function bindApplicationCommands()
     // {
     //     /**
     //      * @var SlashCommandsDriver

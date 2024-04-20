@@ -2,9 +2,6 @@
 
 namespace App\Commands;
 
-use App\Bot\InteractionHandlers\InteractionReflectionLoader;
-use App\Bot\InteractionHandlers\SlashCommandsDriver;
-use App\Commands\Traits\Logs;
 use App\Hephaestus;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Console\Signals;

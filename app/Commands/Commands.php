@@ -2,11 +2,8 @@
 
 namespace App\Commands;
 
-use App\Bot\InteractionHandlers\AbstractInteractionDriver;
-use App\Bot\InteractionHandlers\AbstractSlashCommandsDriver;
-use App\Bot\InteractionHandlers\HandledInteractionType;
-use App\Bot\InteractionHandlers\ISlashCommandsDriver;
-use App\Bot\InteractionHandlers\SlashCommandsDriver;
+use App\Framework\Enums\HandledInteractionType;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use App\Hephaestus;
 use Discord\Builders\CommandBuilder;
 use Discord\Discord;
@@ -59,36 +56,45 @@ class Commands extends Command
          */
         $driver = app(AbstractSlashCommandsDriver::class);
 
-        $hephaestus->discord = new Discord([
-            'token'     => config('discord.token'),
-            'intents'   => config('discord.intents'),
-            // 'logger'    =>
-            // 'loop'      => \React\EventLoop\Factory::create(),
-        ]);
+        // dd($driver->hephaestus->loader->extractClasses(HandledInteractionType::APPLICATION_COMMAND));
 
-        $commands = $driver->getCommandsByName();
+        $this->drawCommandTable($hephaestus);
+        // $hephaestus->discord = new Discord([
+        //     'token'     => config('discord.token'),
+        //     'intents'   => config('discord.intents'),
+        //     // 'logger'    =>
+        //     // 'loop'      => \React\EventLoop\Factory::create(),
+        // ]);
 
-        $hephaestus->discord->on('ready', function (Discord $discord) use ($hephaestus, $driver, $commands) {
+        // $commands = $driver->getCommandsByName();
 
-            $gcr = await($discord->application->commands->freshen());
-            $this->output->writeln("<fg=red>" . $gcr->count() . "</>");
-            $count = $commands->count();
-            $discord->application->commands
-                ->freshen()
-                ->done(
-                    onFulfilled: fn (GlobalCommandRepository $repo) => $this->testUpdate($repo),
-                    onRejected: function () {
-                        $this->output->writeln("<fg=red>Can't refresh GlobalCommandsRepository</>");
-                    }
-                );
+        // $hephaestus->discord->on('ready', function (Discord $discord) use ($hephaestus, $driver, $commands) {
 
-            $this->drawCommandTable($hephaestus);
-        });
+        //     $gcr = await($discord->application->commands->freshen());
+        //     $this->output->writeln("<fg=red>" . $gcr->count() . "</>");
+        //     $count = $commands->count();
+        //     $discord->application->commands
+        //         ->freshen()
+        //         ->done(
+        //             onFulfilled: fn (GlobalCommandRepository $repo) => $this->testUpdate($repo),
+        //             onRejected: function () {
+        //                 $this->output->writeln("<fg=red>Can't refresh GlobalCommandsRepository</>");
+        //             }
+        //         );
+
+        //     $this->drawCommandTable($hephaestus);
+        // });
     }
 
     public function drawCommandTable(Hephaestus $hephaestus)
     {
-        $slashCommandDriverCommands = $hephaestus->loader->getDriver(HandledInteractionType::APPLICATION_COMMAND)
+
+        /**
+         * @var AbstractSlashCommandsDriver
+         */
+        $slashCommandDriver = app(AbstractSlashCommandsDriver::class);
+
+        $slashCommandDriverCommands = $slashCommandDriver
             ->getRelatedHandlers()
             ->map(fn ($c) => ["Command Name" => $c->name, "Description" => $c->description])
             ->sortBy("Command Name", SORT_STRING, SORT_ASC);
@@ -123,10 +129,10 @@ class Commands extends Command
             $this->output->writeln("Removing {$gcr_command->id}");
             if (!$commands->has($gcr_command->name)) {
                 $hephaestus->discord->application->commands->delete($gcr_command)
-                    ->done(onFulfilled: function () use ($hephaestus) {
-                        $this->output->writeln("<fg=green>Valid command</>");
-                    }, onRejected: function () use ($hephaestus) {
-                        $this->output->writeln("Rejected");
+                    ->done(onFulfilled: function () use ($gcr_command) {
+                        $this->output->writeln("<fg=green>Deleted command {$gcr_command->name}</>");
+                    }, onRejected: function () use ($gcr_command){
+                        $this->output->writeln("<fg=red>>Rejected deletion of command {$gcr_command->name}</>");
                     });
             }
         }
