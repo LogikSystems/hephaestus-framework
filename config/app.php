@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => 'Hephaestus-framework',
+    'name' => env('APP_NAME', "Hephaestus-Framework"),
 
     /*
     |--------------------------------------------------------------------------
@@ -53,7 +53,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Europe/Paris'),
 
     /*
     |--------------------------------------------------------------------------
@@ -69,5 +69,9 @@ return [
     'providers' => [
         App\Providers\AppServiceProvider::class,
     ],
+
+    'log_level' => env('LOG_LEVEL', 'debug'),
+
+    'verbosity' => env('APP_VERBOSITY', config('app.log_level')),
 
 ];
