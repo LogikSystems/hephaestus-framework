@@ -7,12 +7,14 @@ use App\Bot\InteractionHandlers\HandledInteractions;
 use App\Bot\InteractionHandlers\HandledInteractionType;
 use App\Bot\InteractionHandlers\InteractionDispatcher;
 use App\Bot\InteractionHandlers\InteractionReflectionLoader;
+use App\Bot\InteractionHandlers\SlashCommandsDriver;
 use App\Commands\Boot;
 use App\Commands\Components\ConsoleLogRecord;
 use Discord\Builders\Components\ActionRow;
 use Discord\Builders\Components\Button;
 use Discord\Builders\MessageBuilder;
 use Discord\Discord;
+use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Log\Logger;
@@ -34,7 +36,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function React\Promise\all;
 
-class Hephaestus extends ADiscordBot
+class Hephaestus
 {
     // use HasLog;
 
@@ -42,11 +44,11 @@ class Hephaestus extends ADiscordBot
      *
      */
     public function __construct(
-        public OutputInterface $command,
+        public ?OutputInterface $command = null,
         public ?Discord $discord = null,
         public ?string $token = null,
-        public ?array $slashCommands = null,
-        public ?array $interactionHandlers = null,
+        // public ?array $slashCommands = null,
+        // public ?array $interactionHandlers = null,
         public ?ReadableStreamInterface $inputStream = null,
         public ?WritableStreamInterface $outputStream = null,
         public ?InteractionReflectionLoader $loader = null,
@@ -60,32 +62,19 @@ class Hephaestus extends ADiscordBot
      * Create a new instances
      * Used for IoC (?)
      */
-    public static function make(OutputInterface $output): self
+    public static function make(?OutputInterface $output = null): self
     {
         return new static(command: $output);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSlashCommandsPath(): string
+    public function setOutput(OutputInterface $output)
     {
-
-        return app_path("Bot" . DIRECTORY_SEPARATOR . "InteractionHandlers" . DIRECTORY_SEPARATOR . "SlashCommands");
+        $this->command = $output;
     }
 
-    /**
-     * @inheritdoc
-     */
-
-    public function getInteractionHandlersPath(): string
-    {
-        return app_path("Bot" . DIRECTORY_SEPARATOR . "InteractionHandlers" . DIRECTORY_SEPARATOR . "InteractionHandlers");
-    }
 
     public function beforeConnection(): void
     {
-        $this->cacheInteractionHandlers();
     }
 
     public function connect(): void
@@ -94,16 +83,12 @@ class Hephaestus extends ADiscordBot
 
         $this->log("Logging in...");
 
-        app()->singleton(
-            Discord::class,
-            fn() => new Discord([
-                'token'     => $this->getToken(),
-                'intents'   => config('discord.intents'),
-                'logger'    => $this->outputStream,
-            ])
-        );
-
-        $this->discord = app(Discord::class);
+        $this->discord = new Discord([
+            'token'     => $this->getToken(),
+            'intents'   => config('discord.intents'),
+            'logger'    => $this->outputStream,
+            // 'loop'      => \React\EventLoop\Factory::create(),
+        ]);
         $this->log("Logged in.");
         $this->log("Now sharing Discord as singleton in app container.");
 
@@ -122,32 +107,29 @@ class Hephaestus extends ADiscordBot
         $this->discord->on('ready', function () {
             //register events here
             $this->log("<bg=cyan> DiscordPHP is ready </>", Level::Info);
-            $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
-            $this->discord->guilds->get("id", 1230346340933042269) #SDA
-                ->channels
-                ->get("id", 1230346340933042272)
-                ->sendMessage(
-                    MessageBuilder::new()
-                        ->setContent("Test")
-                        ->addComponent(
-                            ActionRow::new()
-                                ->addComponent(
-                                    Button::new(Button::STYLE_PRIMARY, "azeaze")
-                                        ->setLabel("Test")
-                                )
-                        )
-                );
-        });
+            // $this->cacheInteractionHandlers();
+            // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
 
-        $this->discord->on('mention', function ($new, $thiis, $old) {
-            var_dump($new, $thiis, $old);
-        });
+            $this->registerApplicationSlashCommands();
 
-        $this->discord->on('reconnected', function () {
+            // $this->discord->guilds->get("id", 1230346340933042269) #SDA
+            //     ->channels
+            //     ->get("id", 1230346340933042272)
+            //     ->sendMessage(
+            //         MessageBuilder::new()
+            //             ->setContent("Test")
+            //             ->addComponent(
+            //                 ActionRow::new()
+            //                     ->addComponent(
+            //                         Button::new(Button::STYLE_PRIMARY, "azeaze")
+            //                             ->setLabel("Test")
+            //                     )
+            //             )
+            //     );
         });
 
         // Bind our entrypoint
-        $this->discord->on(Event::INTERACTION_CREATE, fn ($interaction) => $this->dispatcher->handle($interaction));
+        $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction));
     }
 
     public function beforeDisconnection(): void
@@ -156,7 +138,6 @@ class Hephaestus extends ADiscordBot
 
     public function disconnect(): void
     {
-        $this->log("Leaving...");
         $this->discord->close(true);
         $this->log("Goodbye.");
     }
@@ -166,17 +147,14 @@ class Hephaestus extends ADiscordBot
         return $this->token ?? $this->token = config('discord.token');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getSlashCommands(): array
+    public function registerApplicationSlashCommands(): void
     {
-        if ($this->slashCommands) {
-            return $this->slashCommands;
-        }
-        $slashCommands = $this->loader->load(HandledInteractionType::APPLICATION_COMMAND);
-
-        return $this->slashCommands = $slashCommands;
+        $this->log("Loading application slash commands");
+        /**
+         * @var SlashCommandsDriver $slashCommands
+         */
+        $slashCommands = app(SlashCommandsDriver::class);
+        $slashCommands->register();
     }
 
     /**
@@ -193,24 +171,37 @@ class Hephaestus extends ADiscordBot
             return $this;
         }
 
-        $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
+        // ResourceStream
 
+        // $this->inputStream = new ReadableResourceStream(S, $this->discord->getLoop());
+        // $this->outputStream = new WritableResourceStream($this->discord, $this->discord->getLoop());
+
+        // $this->outputStream->on("drain", function () {
+        //     echo "Stream is now ready to accept more data";
+        // });
+
+        // $this->outputStream->on("data", function ($data) {
+        // });
+
+        // $this->outputStream->on("data", function($data) {
+        //     $this->log($data);
+        // });
 
         return $this;
     }
 
-    /**
-     * Load Interactions Handlers into cache
-     * callback received when a new interaction is created
-     * @see <\App\Hephaestus::handleDiscordPHPLoop>
-     * @see <\Discord\WebSockets\Event>
-     */
-    public function cacheInteractionHandlers(): self
-    {
-        // InteractionReflectionLoader::load(HandledInteractionType::APPLICATION_COMMAND);
-        $this->loader->loadAll();
-        return $this;
-    }
+    // /**
+    //  * Load Interactions Handlers into cache
+    //  * callback received when a new interaction is created
+    //  * @see <\App\Hephaestus::handleDiscordPHPLoop>
+    //  * @see <\Discord\WebSockets\Event>
+    //  */
+    // public function cacheInteractionHandlers(): self
+    // {
+    //     // InteractionReflectionLoader::load(HandledInteractionType::APPLICATION_COMMAND);
+    //     $this->loader->loadAll();
+    //     return $this;
+    // }
 
 
     /**
@@ -251,7 +242,7 @@ class Hephaestus extends ADiscordBot
             with(new ConsoleLogRecord($this->command))->render($config, $message);
         }
 
-        Log::log($level->name, strip_tags($message), $context);
+        // Log::log($level->name, strip_tags($message), $context);
     }
 
     public static function getHandlerCacheKey(HandledInteractionType $type)

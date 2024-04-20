@@ -60,7 +60,7 @@ class ConsoleLogRecord extends Component
     {
         extract($data);
 
-        $path = __DIR__."/../../../resources/views/components/{$view}.php";
+        $path = resource_path("/views/components/{$view}.php");
 
         ob_start();
 

@@ -129,7 +129,6 @@ class InteractionReflectionLoader
             })
             ->filter(function ($strClass) use ($type) {
                 $class = new ReflectionClass($strClass);
-                // dd($strClass);
                 return !$class->isAbstract()
                     && $class->implementsInterface(InteractionHandler::class)
                     && $class->isSubclassOf($this->resolveAbstraction($type));
@@ -149,7 +148,12 @@ class InteractionReflectionLoader
         $this->hephaestus->log("Binding {$type->name}");
         switch ($type) {
             case HandledInteractionType::APPLICATION_COMMAND:
-                $this->bindApplicationCommands();
+                /**
+                 * @var AbstractSlashCommandsDriver $driver
+                 */
+                $driver = app(AbstractSlashCommandsDriver::class);
+                $driver->register();
+
                 break;
             default:
                 $this->hephaestus->log("Cannot bind {$type->name}. Unimplementend.");
@@ -168,15 +172,14 @@ class InteractionReflectionLoader
     }
 
 
-    protected function bindApplicationCommands()
-    {
-
-        /**
-         * @var SlashCommandsDriver
-         */
-        with(app(SlashCommandsDriver::class))
-            ->register();
-    }
+    // protected function bindApplicationCommands()
+    // {
+    //     /**
+    //      * @var SlashCommandsDriver
+    //      */
+    //     with(app(SlashCommandsDriver::class))
+    //         ->register();
+    // }
 
     /**
      *
@@ -188,10 +191,11 @@ class InteractionReflectionLoader
             ->map(fn ($class) => app($class));
     }
 
-    public function getDriver(HandledInteractionType $type) :  InteractionDriver|null
+    public function getDriver(HandledInteractionType $type) :  AbstractInteractionDriver|null
     {
         return match ($type) {
             HandledInteractionType::APPLICATION_COMMAND => app(SlashCommandsDriver::class),
+            HandledInteractionType::MESSAGE_COMPONENT   => app(MessageComponentsDriver::class),
             default => null,
         };
     }

@@ -19,7 +19,7 @@ class InteractionDispatcher implements InteractionHandler
     ) {
         // $this->loader = new InteractionReflectionLoader($this->hephaestus);
         // $this->hephaestus->command->log("Creating an " . __METHOD__);
-        $this->hephaestus->command->writeln("<bg=blue> TEST </>");
+        // $this->hephaestus->log("<bg=blue> TEST </>");
     }
 
     /**
@@ -52,7 +52,7 @@ class InteractionDispatcher implements InteractionHandler
 
         $driver = $this->hephaestus->loader->getDriver($type);
         if(!$driver) {
-            $this->hephaestus->log("<bg=red> No driver for {$type->name} </> ", Level::Warning,  []);
+            $this->hephaestus->log("<bg=red> No driver for {$type->name} </>", Level::Warning,  []);
         } else {
             $this->hephaestus->log("Resolved driver", Level::Debug, [$driver]);
             $interactionHandler = $driver->find($interaction);

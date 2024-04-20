@@ -43,26 +43,19 @@ class Boot extends Command
         // $this->output;
 
 
-        $this->app->singleton(
-            Hephaestus::class,
-            fn () => Hephaestus::make($this->output)
-        );
-
-
-
-
+        // $this->app->singleton(
+        //     Hephaestus::class,
+        //     fn () => Hephaestus::make($this->output)
+        // );
         /**
          * @var Hephaestus
          */
         $hephaestus = $this->app->make(Hephaestus::class);
-        $slashCommandLoader = app()->singleton(
-            SlashCommandsDriver::class,
-            fn () => new SlashCommandsDriver($hephaestus)
-        );
+        $hephaestus->setOutput($this->output);
+
+
         $hephaestus->log("Starting bot.", Level::Info);
         $hephaestus->connect();
-
-
     }
 
     /**
