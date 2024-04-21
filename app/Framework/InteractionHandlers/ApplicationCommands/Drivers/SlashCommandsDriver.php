@@ -137,16 +137,17 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
 
     function updateOne(GlobalCommandRepository $globalCommandRepository, string $commandName, Command $command)
     {
-        $c = new Command(
-            $this->hephaestus->discord,
-            CommandBuilder::new()
-                ->setName($command->name)
-                ->setDescription($command->description)
-                ->setType(Command::CHAT_INPUT)
-                ->toArray()
-        );
-
+        // $c = new Command(
+        //     $this->hephaestus->discord,
+        //     CommandBuilder::new()
+        //         ->setName($command->name)
+        //         ->setDescription($command->description)
+        //         ->setType(Command::CHAT_INPUT)
+        //         ->setDefaultMemberPermissions($command->default_member_permissions)
+        //         ->toArray()
+        // );
+        // dd($command->getRawAttributes());
         return $globalCommandRepository
-            ->save($c);
+            ->save($command);
     }
 }

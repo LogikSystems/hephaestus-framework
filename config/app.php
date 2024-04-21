@@ -68,6 +68,7 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
+        Laravel\Sail\SailServiceProvider::class,
     ],
 
     'log_level' => env('LOG_LEVEL', 'debug'),

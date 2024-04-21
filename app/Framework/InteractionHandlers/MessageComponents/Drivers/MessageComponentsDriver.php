@@ -6,6 +6,7 @@ namespace App\Framework\InteractionHandlers\MessageComponents\Drivers;
 use App\Contracts\InteractionHandler;
 use App\Framework\Enums\HandledInteractionType;
 use App\Framework\InteractionHandlers\AbstractInteractionDriver;
+use App\Framework\InteractionHandlers\MessageComponents\AbstractMessageComponent;
 use Discord\Parts\Interactions\Interaction;
 use Monolog\Level;
 
@@ -26,11 +27,13 @@ class MessageComponentsDriver extends AbstractInteractionDriver
      */
     public function find(Interaction $interaction): InteractionHandler|null
     {
-        $collect = $this->hephaestus->loader->hydratedHandlers($this->getHandledInteractionType());
+        // dd($interaction);
+        $collect = $this->getRelatedHandlers();
+        // dd($collect->first());
         $this->hephaestus->log("Filtering between: <fg=blue>".$collect->count()."</> interaction handlers.", Level::Debug, [$interaction]);
-        return $this->hephaestus->loader->hydratedHandlers($this->getHandledInteractionType())
-            ->filter(fn ($c) => strcmp($c->name, $interaction->data->name) === 0)
-            ->first();
+        return $collect
+            // ->each(fn ($class) => $class)
+            ->first(fn (AbstractMessageComponent $c) => strcmp($c->component_custom_id, $interaction->data?->custom_id) === 0);
     }
 
 

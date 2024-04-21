@@ -6,6 +6,7 @@ use App\Commands\Components\ConsoleLogRecord;
 use App\Framework\Enums\HandledInteractionType;
 use App\Framework\InteractionDispatcher;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
 use App\Framework\InteractionReflectionLoader;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;
 use Psr\Log\LogLevel;
+use React\EventLoop\LoopInterface;
 use React\Stream\CompositeStream;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
@@ -42,9 +44,12 @@ class Hephaestus
         public ?WritableStreamInterface $outputStream = null,
         public ?InteractionReflectionLoader $loader = null,
         public ?InteractionDispatcher $dispatcher = null,
+        public ?LoopInterface $loopInterface = null,
     ) {
         $this->dispatcher = new InteractionDispatcher($this);
         $this->loader = new InteractionReflectionLoader($this);
+
+        // $this->loopInterface = new EvLoop
     }
 
     /**
@@ -83,6 +88,7 @@ class Hephaestus
             'logger'        => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
+        // $this->discord->handleWsMessage()
         $this->log("Logged in.");
         $this->log("Now sharing Discord as singleton in app container.");
 
@@ -99,6 +105,12 @@ class Hephaestus
     {
         // $this->discord->application->commands->create(new CommandCommand($this->discord))
         $this->discord->on('ready', function () {
+            /**
+             * @var MessageComponentsDriver $msg
+             */
+            // $msg = app(MessageComponentsDriver::class);
+            // dd($msg->getRelatedHandlers()->first());
+
             //register events here
             $this->log("<bg=cyan> DiscordPHP is ready </>", Level::Info);
             // $this->cacheInteractionHandlers();
@@ -120,6 +132,7 @@ class Hephaestus
             //                     )
             //             )
             //     );
+
         });
 
         // Bind our entrypoint
@@ -186,10 +199,10 @@ class Hephaestus
 
         $this->discord->getLoop();
         // $this->discord->getLoop()->addWriteStream($streamOutput->getStream(), function ($stream) {
-            // dd($stream);
-            // fwrite($stream, "<bg=white> Je suis au bon endroit ? </>"); La réponse était non.
+        // dd($stream);
+        // fwrite($stream, "<bg=white> Je suis au bon endroit ? </>"); La réponse était non.
         // });
-            // $this->discord->getLoop()
+        // $this->discord->getLoop()
 
 
         // $streamOutput->writeln("<bg=red> ATTENTION ! </>");
@@ -203,7 +216,7 @@ class Hephaestus
         // $this->outputStream->on('data', fn ($data) => var_dump($data));
 
         // $this->outputStream->on("drain", function () {
-            // $this->command->writeln("Stream is now ready to accept more data");
+        // $this->command->writeln("Stream is now ready to accept more data");
         // });
         // $this->outputStream->write("test !", []);
         // $this->outputStream->

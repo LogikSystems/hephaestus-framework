@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Framework\InteractionHandlers\AbstractInteractionDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
 use App\Hephaestus;
 use Discord\Interaction;
 use Discord\Repository\Interaction\GlobalCommandRepository;
@@ -13,6 +15,8 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Reflector;
 use Illuminate\Support\ServiceProvider;
 use LaravelZero\Framework\Kernel as FrameworkKernel;
 use Symfony\Component\Console\Input\InputInterface;
@@ -98,10 +102,25 @@ class AppServiceProvider extends ServiceProvider
             \App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver::class,
             true
         );
-        // * Define singleton ref to drivers that might be
-        $this->app->when(AbstractSlashCommandsDriver::class)
-            ->needs(Hephaestus::class)
+
+        $this->app->when(
+            AbstractInteractionDriver::class
+        )->needs(Hephaestus::class)
             ->give(fn () => app(Hephaestus::class));
+
+        // * Define singleton ref to drivers that might be
+        // $this->app->when(AbstractSlashCommandsDriver::class)
+        //     ->needs(Hephaestus::class)
+        //     ->give(fn () => app(Hephaestus::class));
+
+        /**
+         * @var Hephaestus
+         */
+        // $hephaestus = app(Hephaestus::class);
+        // $hephaestus->connect();
+
+        // app(GlobalCommandRepository::class)
+
 
         $this->app->bind(GlobalCommandRepository::class, fn () => $this->app->make(Hephaestus::class)->discord?->application?->commands);
         // $this->app->when(AbstractSlashCommandsDriver::class)
