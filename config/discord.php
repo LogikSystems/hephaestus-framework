@@ -14,11 +14,14 @@ return [
         "loadAllMembers" => true,
     ],
 
-    "vendor_commands" => [],
+    "logger" =>  env('DISCORD_LOGGING_CHANNEL'),
 
-    "vendor_services" => [],
+    // "vendor_commands" => [],
 
-    "vendor_events"   => []
+    // "vendor_services" => [],,
+
+    // "vendor_events"   => [],
+
 
 
 ];

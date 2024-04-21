@@ -10,14 +10,18 @@ use App\Framework\InteractionReflectionLoader;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Log;
 use Monolog\Level;
 use Psr\Log\LogLevel;
+use React\Stream\CompositeStream;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 use function React\Promise\all;
 
@@ -67,11 +71,15 @@ class Hephaestus
         $this->beforeConnection();
 
         $this->log("Logging in...");
-
+        // dd(getenv());
+        // dd(config('discord'));
+        $loggerChannelNameForDiscord = config("discord.logger") ?? "null";
+        // dd($loggerChannelNameForDiscord);
+        $discordLoggerChannelConfig = config("logging.channels.{$loggerChannelNameForDiscord}");
         $this->discord = new Discord([
             'token'     => $this->getToken(),
             'intents'   => config('discord.intents'),
-            'logger'    => $this->outputStream,
+            'logger'    => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
         $this->log("Logged in.");
@@ -115,6 +123,10 @@ class Hephaestus
 
         // Bind our entrypoint
         $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction));
+
+        // $this->discord->getLoop()->addPeriodicTimer(5, function () {
+        //     $this->command->writeln("<fg=red>test</>");
+        // });
     }
 
     public function beforeDisconnection(): void
@@ -162,13 +174,38 @@ class Hephaestus
         $kernel = app(Kernel::class);
 
         // ResourceStream
-        $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
-        $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
+        // $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
+
+        /**
+         * @var StreamOutput $streamOutput
+         */
+        // $streamOutput = app(StreamOutput::class);
+        // $streamOutput->
+        // $streamOutput->write()
+
+        $this->discord->getLoop();
+        // $this->discord->getLoop()->addWriteStream($streamOutput->getStream(), function ($stream) {
+            // dd($stream);
+            // fwrite($stream, "<bg=white> Je suis au bon endroit ? </>"); La réponse était non.
+        // });
+            // $this->discord->getLoop()
+
+
+        // $streamOutput->writeln("<bg=red> ATTENTION ! </>");
+        // dd();
+
+        // $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
         // dd($kernel);
 
+        // $composite = new CompositeStream($this->inputStream, $this->outputStream);
+
+        // $this->outputStream->on('data', fn ($data) => var_dump($data));
+
         // $this->outputStream->on("drain", function () {
-        //     echo "Stream is now ready to accept more data";
+            // $this->command->writeln("Stream is now ready to accept more data");
         // });
+        // $this->outputStream->write("test !", []);
+        // $this->outputStream->
 
         // $this->outputStream->on("data", function ($data) {
         // });
