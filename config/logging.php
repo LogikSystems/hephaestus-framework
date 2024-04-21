@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -50,20 +51,25 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['stderr'],
+            'channels' => [
+                // "stdout",
+                "daily",
+            ],
             'ignore_exceptions' => false,
         ],
 
-        'single' => [
+        'single' => [ # Used for discordphp bot's logging
             'driver' => 'single',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => storage_path('logs/'.env("APP_NAME", null).'.log'),
+            // 'tap' => [App\Logging\HephaestusFormatter::class],
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
         'daily' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => storage_path('logs/'.env("APP_NAME", null).'.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            // 'formatter' => App\Logging\HephaestusFormatter::class,
             'days' => 14,
         ],
 
@@ -89,6 +95,7 @@ return [
             'driver' => 'monolog',
             'level' => env('LOG_LEVEL', 'debug'),
             'handler' => StreamHandler::class,
+            // 'tap' => [App\Logging\HephaestusFormatter::class],
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'with' => [
                 'stream' => 'php://stderr',
@@ -112,6 +119,16 @@ return [
 
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
+        ],
+
+        'stdout' => [
+            'driver'    => 'monolog',
+            'level'     => env('LOG_LEVEL', 'debug'),
+            'handler'   => StreamHandler::class,
+            'formatter' => LineFormatter::class,
+            'with' => [
+                'stream' => 'php://stdout',
+            ],
         ],
     ],
 
