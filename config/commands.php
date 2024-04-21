@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Foundation\PackageManifest;
-use Laravel\Sail\SailServiceProvider;
 
 return [
 
@@ -60,15 +59,14 @@ return [
     */
 
     'hidden' => [
-        // NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
-        // Symfony\Component\Console\Command\DumpCompletionCommand::class,
-        // Symfony\Component\Console\Command\HelpCommand::class,
-        // Illuminate\Console\Scheduling\ScheduleRunCommand::class,
-        // Illuminate\Console\Scheduling\ScheduleListCommand::class,
-        // Illuminate\Console\Scheduling\ScheduleFinishCommand::class,
+        NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
+        Symfony\Component\Console\Command\DumpCompletionCommand::class,
+        Symfony\Component\Console\Command\HelpCommand::class,
+        Illuminate\Console\Scheduling\ScheduleRunCommand::class,
+        Illuminate\Console\Scheduling\ScheduleListCommand::class,
+        Illuminate\Console\Scheduling\ScheduleFinishCommand::class,
         Illuminate\Foundation\Console\VendorPublishCommand::class,
-        // LaravelZero\Framework\Commands\StubPublishCommand::class,
-        // SailServiceProvider
+        LaravelZero\Framework\Commands\StubPublishCommand::class,
     ],
 
     /*
