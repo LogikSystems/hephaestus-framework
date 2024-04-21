@@ -72,6 +72,6 @@ return [
 
     'log_level' => env('LOG_LEVEL', 'debug'),
 
-    'verbosity' => env('APP_VERBOSITY', config('app.log_level')),
+    'verbosity_level' => env('APP_VERBOSITY', 'debug'),
 
 ];

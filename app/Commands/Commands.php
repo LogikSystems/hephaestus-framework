@@ -63,7 +63,7 @@ class Commands extends Command
         // $hephaestus->command->writeln("caca");
         // dd($driver->hephaestus->loader->extractClasses(HandledInteractionType::APPLICATION_COMMAND));
 
-        // $this->drawCommandTable($hephaestus);
+        $this->drawCommandTable($hephaestus);
 
         // $hephaestus->discord = new Discord([
         //     'token'     => config('discord.token'),
@@ -99,12 +99,12 @@ class Commands extends Command
     {
 
         /**
-         * @var AbstractSlashCommandsDriver
+         * @var ISlashCommandsDriver
          */
-        $slashCommandDriver = app(AbstractSlashCommandsDriver::class);
+        $slashCommandDriver = app(ISlashCommandsDriver::class);
 
         $slashCommandDriverCommands = $slashCommandDriver
-            ->getRelatedHandlers()
+            ->getCommandsByName()
             ->map(fn ($c) => ["Command Name" => $c->name, "Description" => $c->description])
             ->sortBy("Command Name", SORT_STRING, SORT_ASC);
 

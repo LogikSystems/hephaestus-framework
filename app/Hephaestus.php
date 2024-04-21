@@ -77,9 +77,10 @@ class Hephaestus
         // dd($loggerChannelNameForDiscord);
         $discordLoggerChannelConfig = config("logging.channels.{$loggerChannelNameForDiscord}");
         $this->discord = new Discord([
-            'token'     => $this->getToken(),
-            'intents'   => config('discord.intents'),
-            'logger'    => Log::build($discordLoggerChannelConfig),
+            'token'         => $this->getToken(),
+            // 'description'   => config('discord.description'),
+            'intents'       => config('discord.intents'),
+            'logger'        => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
         $this->log("Logged in.");
@@ -241,10 +242,8 @@ class Hephaestus
         }
 
         $message = trim($message);
-
-        if ($level->value >= Level::fromName(config('app.verbosity'))->value) {
-
-
+        // dd(env('APP_VERBOSITY'));
+        if ($level->value >= Level::fromName(config('app.verbosity_level', 'debug'))->value) {
             if (empty($message)) {
                 return;
             }
