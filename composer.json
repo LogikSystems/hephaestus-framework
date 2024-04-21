@@ -15,6 +15,7 @@
         }
     ],
     "type": "framework",
+
     "license": "MIT",
     "require": {
         "php": "^8.1",
