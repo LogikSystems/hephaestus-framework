@@ -78,6 +78,9 @@ class InteractionReflectionLoader
         return app_path("InteractionHandlers" . DIRECTORY_SEPARATOR . $string);
     }
 
+    /**
+     * Resolve
+     */
     public function resolvePathName(HandledInteractionType $type)
     {
         return match ($type) {
@@ -193,7 +196,7 @@ class InteractionReflectionLoader
     public function hydratedHandlers(HandledInteractionType $type): Collection
     {
         return collect($this->load($type))
-            ->map(fn ($class) => app($class));
+            ->map(fn ($class) => app($class)); // Cast into appropriate container service
     }
 
     public function getDriver(HandledInteractionType $type) :  AbstractInteractionDriver|null

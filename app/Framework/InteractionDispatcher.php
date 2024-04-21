@@ -53,6 +53,7 @@ class InteractionDispatcher implements InteractionHandler
             $this->hephaestus->log("<bg=red> No driver for {$type->name} </>", Level::Warning,  []);
         } else {
             $this->hephaestus->log("Resolved driver", Level::Debug, [$driver]);
+            // dd($driver->getRelatedHandlers()->first());
             $interactionHandler = $driver->find($interaction);
             if(!$interactionHandler) {
                 $this->hephaestus->log("No handler found for {$type->name}", Level::Info,  []);

@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Foundation\PackageManifest;
+
 return [
 
     /*
@@ -26,7 +28,9 @@ return [
     |
     */
 
-    'paths' => [app_path('Commands')],
+    'paths' => [
+        app_path('Commands'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -55,7 +59,7 @@ return [
     */
 
     'hidden' => [
-        // NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
+        NunoMaduro\LaravelConsoleSummary\SummaryCommand::class,
         Symfony\Component\Console\Command\DumpCompletionCommand::class,
         Symfony\Component\Console\Command\HelpCommand::class,
         Illuminate\Console\Scheduling\ScheduleRunCommand::class,

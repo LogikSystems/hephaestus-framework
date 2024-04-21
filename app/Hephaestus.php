@@ -6,18 +6,24 @@ use App\Commands\Components\ConsoleLogRecord;
 use App\Framework\Enums\HandledInteractionType;
 use App\Framework\InteractionDispatcher;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
 use App\Framework\InteractionReflectionLoader;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Log;
 use Monolog\Level;
 use Psr\Log\LogLevel;
+use React\EventLoop\LoopInterface;
+use React\Stream\CompositeStream;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 use function React\Promise\all;
 
@@ -38,9 +44,12 @@ class Hephaestus
         public ?WritableStreamInterface $outputStream = null,
         public ?InteractionReflectionLoader $loader = null,
         public ?InteractionDispatcher $dispatcher = null,
+        public ?LoopInterface $loopInterface = null,
     ) {
         $this->dispatcher = new InteractionDispatcher($this);
         $this->loader = new InteractionReflectionLoader($this);
+
+        // $this->loopInterface = new EvLoop
     }
 
     /**
@@ -67,13 +76,19 @@ class Hephaestus
         $this->beforeConnection();
 
         $this->log("Logging in...");
-
+        // dd(getenv());
+        // dd(config('discord'));
+        $loggerChannelNameForDiscord = config("discord.logger") ?? "null";
+        // dd($loggerChannelNameForDiscord);
+        $discordLoggerChannelConfig = config("logging.channels.{$loggerChannelNameForDiscord}");
         $this->discord = new Discord([
-            'token'     => $this->getToken(),
-            'intents'   => config('discord.intents'),
-            'logger'    => $this->outputStream,
+            'token'         => $this->getToken(),
+            // 'description'   => config('discord.description'),
+            'intents'       => config('discord.intents'),
+            'logger'        => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
+        // $this->discord->handleWsMessage()
         $this->log("Logged in.");
         $this->log("Now sharing Discord as singleton in app container.");
 
@@ -90,6 +105,12 @@ class Hephaestus
     {
         // $this->discord->application->commands->create(new CommandCommand($this->discord))
         $this->discord->on('ready', function () {
+            /**
+             * @var MessageComponentsDriver $msg
+             */
+            // $msg = app(MessageComponentsDriver::class);
+            // dd($msg->getRelatedHandlers()->first());
+
             //register events here
             $this->log("<bg=cyan> DiscordPHP is ready </>", Level::Info);
             // $this->cacheInteractionHandlers();
@@ -111,10 +132,15 @@ class Hephaestus
             //                     )
             //             )
             //     );
+
         });
 
         // Bind our entrypoint
         $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction));
+
+        // $this->discord->getLoop()->addPeriodicTimer(5, function () {
+        //     $this->command->writeln("<fg=red>test</>");
+        // });
     }
 
     public function beforeDisconnection(): void
@@ -162,13 +188,38 @@ class Hephaestus
         $kernel = app(Kernel::class);
 
         // ResourceStream
-        $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
-        $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
+        // $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
+
+        /**
+         * @var StreamOutput $streamOutput
+         */
+        // $streamOutput = app(StreamOutput::class);
+        // $streamOutput->
+        // $streamOutput->write()
+
+        $this->discord->getLoop();
+        // $this->discord->getLoop()->addWriteStream($streamOutput->getStream(), function ($stream) {
+        // dd($stream);
+        // fwrite($stream, "<bg=white> Je suis au bon endroit ? </>"); La réponse était non.
+        // });
+        // $this->discord->getLoop()
+
+
+        // $streamOutput->writeln("<bg=red> ATTENTION ! </>");
+        // dd();
+
+        // $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
         // dd($kernel);
 
+        // $composite = new CompositeStream($this->inputStream, $this->outputStream);
+
+        // $this->outputStream->on('data', fn ($data) => var_dump($data));
+
         // $this->outputStream->on("drain", function () {
-        //     echo "Stream is now ready to accept more data";
+        // $this->command->writeln("Stream is now ready to accept more data");
         // });
+        // $this->outputStream->write("test !", []);
+        // $this->outputStream->
 
         // $this->outputStream->on("data", function ($data) {
         // });
@@ -204,10 +255,8 @@ class Hephaestus
         }
 
         $message = trim($message);
-
-        if ($level->value >= Level::fromName(config('app.verbosity'))->value) {
-
-
+        // dd(env('APP_VERBOSITY'));
+        if ($level->value >= Level::fromName(config('app.verbosity_level', 'debug'))->value) {
             if (empty($message)) {
                 return;
             }

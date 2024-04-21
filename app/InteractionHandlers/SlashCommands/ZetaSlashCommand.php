@@ -15,7 +15,7 @@ class ZetaSlashCommand extends AbstractSlashCommand
     /**
      * @inheritdoc
      */
-    public string $name = "anothercommand";
+    public string $name = "ougachaga";
 
     /**
      * @inheritdoc

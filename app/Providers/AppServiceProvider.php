@@ -2,22 +2,28 @@
 
 namespace App\Providers;
 
+use App\Framework\InteractionHandlers\AbstractInteractionDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
+use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
 use App\Hephaestus;
 use Discord\Interaction;
 use Discord\Repository\Interaction\GlobalCommandRepository;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Reflector;
 use Illuminate\Support\ServiceProvider;
 use LaravelZero\Framework\Kernel as FrameworkKernel;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -68,11 +74,16 @@ class AppServiceProvider extends ServiceProvider
         // );
 
 
-        // $this->app->when(Hephaestus::class)
-        //     ->needs(OutputInterface::class)
-        //     ->give(function () {
-        //         return $this->app->make(OutputInterface::class);
-        //     });
+        $this->app->when(Hephaestus::class)
+            ->needs(OutputInterface::class)
+            ->give(function () {
+                return $this->app->make(OutputInterface::class);
+            });
+
+        // $this->app->bind(
+        //     StreamOutput::class,
+        //     fn () => new StreamOutput(STDOUT, StreamOutput::VERBOSITY_NORMAL, true)
+        // );
 
         $this->app->singleton(
             Hephaestus::class,
@@ -92,9 +103,24 @@ class AppServiceProvider extends ServiceProvider
             true
         );
 
-        $this->app->when(AbstractSlashCommandsDriver::class)
-            ->needs(Hephaestus::class)
+        $this->app->when(
+            AbstractInteractionDriver::class
+        )->needs(Hephaestus::class)
             ->give(fn () => app(Hephaestus::class));
+
+        // * Define singleton ref to drivers that might be
+        // $this->app->when(AbstractSlashCommandsDriver::class)
+        //     ->needs(Hephaestus::class)
+        //     ->give(fn () => app(Hephaestus::class));
+
+        /**
+         * @var Hephaestus
+         */
+        // $hephaestus = app(Hephaestus::class);
+        // $hephaestus->connect();
+
+        // app(GlobalCommandRepository::class)
+
 
         $this->app->bind(GlobalCommandRepository::class, fn () => $this->app->make(Hephaestus::class)->discord?->application?->commands);
         // $this->app->when(AbstractSlashCommandsDriver::class)

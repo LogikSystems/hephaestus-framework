@@ -37,16 +37,17 @@ class HelpSlashCommand extends AbstractSlashCommand
 
         $commands = $hepha->loader->hydratedHandlers(HandledInteractionType::APPLICATION_COMMAND);
         $commandsCount = $commands->count();
-        $strCommands = $commands->map(fn(Command $command) => "- `/{$command->name}` : {$command->description}")->join("\n");
+        $strCommands = $commands->map(fn (Command $command) => "- `/{$command->name}` : {$command->description}")->join("\n");
 
         $interaction->respondWithMessage(
             MessageBuilder::new()
-                ->addEmbed(new Embed($hepha->discord, [
-                    "title" => "Don't worry i'm here",
-                    "description" => $strCommands,
-                    "color" => 15844367,
-                    "fields" => new Collection([]),
-                ])
+                ->addEmbed(
+                    new Embed($hepha->discord, [
+                        "title" => "Don't worry i'm here",
+                        "description" => $strCommands,
+                        "color" => 15844367,
+                        "fields" => new Collection([]),
+                    ])
                 )
         );
     }

@@ -8,7 +8,9 @@ use Illuminate\Console\Signals;
 use Illuminate\Support\Facades\Log;
 use LaravelZero\Framework\Commands\Command;
 use Monolog\Level;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+// #[AsCommand(name: "bot:boot", description: "Starts the bot")]
 class Boot extends Command
 {
 

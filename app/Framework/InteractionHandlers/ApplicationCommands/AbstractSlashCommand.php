@@ -3,6 +3,7 @@
 namespace App\Framework\InteractionHandlers\ApplicationCommands;
 
 use App\Contracts\InteractionHandler;
+use App\Hephaestus;
 use Discord\Parts\Interactions\Command\Command;
 use Discord\Parts\Interactions\Interaction;
 
@@ -21,6 +22,7 @@ implements InteractionHandler
             ],
             get_class_vars($this::class),
         );
+        parent::__construct(app(Hephaestus::class)->discord, $attributes);
     }
 
     /**
