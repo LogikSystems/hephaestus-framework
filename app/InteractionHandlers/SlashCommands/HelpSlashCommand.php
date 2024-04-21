@@ -37,7 +37,7 @@ class HelpSlashCommand extends AbstractSlashCommand
 
         $commands = $hepha->loader->hydratedHandlers(HandledInteractionType::APPLICATION_COMMAND);
         $commandsCount = $commands->count();
-        $strCommands = $commands->map(fn(Command $command) => "\n - `/{$command->name}` : {$command->description}");
+        $strCommands = $commands->map(fn(Command $command) => "- `/{$command->name}` : {$command->description}")->join("\n");
 
         $interaction->respondWithMessage(
             MessageBuilder::new()
