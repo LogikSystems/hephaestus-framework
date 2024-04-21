@@ -10,9 +10,12 @@ use App\Framework\InteractionReflectionLoader;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
+use Illuminate\Contracts\Console\Kernel;
 use Monolog\Level;
 use Psr\Log\LogLevel;
+use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
+use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -153,10 +156,15 @@ class Hephaestus
             return $this;
         }
 
-        // ResourceStream
+        /**
+         * @var Kernel $kernel;
+         */
+        $kernel = app(Kernel::class);
 
-        // $this->inputStream = new ReadableResourceStream(S, $this->discord->getLoop());
-        // $this->outputStream = new WritableResourceStream($this->discord, $this->discord->getLoop());
+        // ResourceStream
+        $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
+        $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
+        // dd($kernel);
 
         // $this->outputStream->on("drain", function () {
         //     echo "Stream is now ready to accept more data";

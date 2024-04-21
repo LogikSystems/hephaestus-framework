@@ -7,6 +7,7 @@ use App\Framework\Enums\HandledInteractionType;
 use App\Framework\InteractionHandlers\AbstractInteractionDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
 use Discord\Parts\Interactions\Interaction;
+use Discord\Repository\Interaction\GlobalCommandRepository;
 use Illuminate\Support\Collection;
 use Monolog\Level;
 

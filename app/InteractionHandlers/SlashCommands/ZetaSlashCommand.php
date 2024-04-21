@@ -15,12 +15,12 @@ class ZetaSlashCommand extends AbstractSlashCommand
     /**
      * @inheritdoc
      */
-    public string $name = "test";
+    public string $name = "anothercommand";
 
     /**
      * @inheritdoc
      */
-    public string $description = "Affiche l'aide";
+    public string $description = "Ne fait absolument rien.";
 
     /**
      * @inheritdoc

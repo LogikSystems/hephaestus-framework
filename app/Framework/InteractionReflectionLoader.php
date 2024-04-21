@@ -9,6 +9,7 @@ use App\Framework\Enums\HandledInteractionType;
 use App\Framework\InteractionHandlers\AbstractInteractionDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
+use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use App\Framework\InteractionHandlers\ApplicationCommands\Drivers\SlashCommandsDriver;
 use App\Framework\InteractionHandlers\MessageComponents\AbstractMessageComponent;
 use App\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
@@ -198,7 +199,7 @@ class InteractionReflectionLoader
     public function getDriver(HandledInteractionType $type) :  AbstractInteractionDriver|null
     {
         return match ($type) {
-            HandledInteractionType::APPLICATION_COMMAND => app(SlashCommandsDriver::class),
+            HandledInteractionType::APPLICATION_COMMAND => app(ISlashCommandsDriver::class),
             HandledInteractionType::MESSAGE_COMPONENT   => app(MessageComponentsDriver::class),
             default => null,
         };
