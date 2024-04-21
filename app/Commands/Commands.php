@@ -65,14 +65,14 @@ class Commands extends Command
 
         // $this->drawCommandTable($hephaestus);
 
-        $hephaestus->discord = new Discord([
-            'token'     => config('discord.token'),
-            'intents'   => config('discord.intents'),
-            // 'logger'    =>
-            // 'loop'      => \React\EventLoop\Factory::create(),
-        ]);
+        // $hephaestus->discord = new Discord([
+        //     'token'     => config('discord.token'),
+        //     'intents'   => config('discord.intents'),
+        //     // 'logger'    =>
+        //     // 'loop'      => \React\EventLoop\Factory::create(),
+        // ]);
 
-        $hephaestus->discord->on('ready', fn () => $driver->register());
+        // $hephaestus->discord->on('ready', fn () => $driver->register());
 
 
         // $commands = $driver->getCommandsByName();
