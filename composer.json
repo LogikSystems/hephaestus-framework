@@ -42,6 +42,15 @@
             "App\\Commands\\": "laravel/Commands/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers" : {
+                [
+                    "Hephaestus\\Framework\\Provider\\HephaestusServiceProvider"
+                ]
+            }
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/"
