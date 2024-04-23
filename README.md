@@ -22,7 +22,7 @@
             <li>❌ PING interactions. </li>
             <li>❌ APPLICATION_COMMAND_AUTOCOMPLETE interaction</li>
             <li>❌ MODAL_SUBMIT interaction</li>
-            <li>❌ MESSAGE_COMPONENT interaction</li>
+            <li>☑️ MESSAGE_COMPONENT interaction. (Not totally implemented).</li>
         </ul>
     </li>
 </ul>

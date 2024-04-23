@@ -1,5 +1,5 @@
 {
-    "name": "bcts/hephaestus-framework",
+    "name": "logiksystems/hephaestus-framework",
     "description": "The Hephaestus Framework.",
     "keywords": [
         "framework",
@@ -12,6 +12,10 @@
         {
             "name": "bcts",
             "homepage": "https://github.com/tom-shelby"
+        },
+        {
+            "name": "Lilierd",
+            "homepage": "https://github.com/lilierd"
         }
     ],
     "type": "framework",
