@@ -1,6 +1,6 @@
 {
-    "name": "tom-shelby/hephaestus-framework",
-    "description": "The Laravel Zero Framework.",
+    "name": "bcts/hephaestus-framework",
+    "description": "The Hephaestus Framework.",
     "keywords": [
         "framework",
         "laravel",
@@ -10,7 +10,7 @@
     "homepage": "https://laravel-zero.com",
     "authors": [
         {
-            "name": "Tom Shelby",
+            "name": "bcts",
             "homepage": "https://github.com/tom-shelby"
         }
     ],
@@ -33,9 +33,9 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Hephaestus\\Framework\\": "src/",
+            "App\\Providers\\": "laravel/Providers/",
+            "App\\Commands\\": "laravel/Commands/"
         }
     },
     "autoload-dev": {
