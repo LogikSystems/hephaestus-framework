@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Commands;
+namespace Hephaestus\Framework\Commands;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Log;
-use LaravelZero\Framework\Commands\Command;
+use Illuminate\Console\Command;
 
-class ClearLogs extends Command
+class ClearLogsCommand extends Command
 {
     /**
      * The signature of the command.

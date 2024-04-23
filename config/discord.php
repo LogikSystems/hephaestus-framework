@@ -16,12 +16,4 @@ return [
 
     "logger" =>  env('DISCORD_LOGGING_CHANNEL'),
 
-    // "vendor_commands" => [],
-
-    // "vendor_services" => [],,
-
-    // "vendor_events"   => [],
-
-
-
 ];

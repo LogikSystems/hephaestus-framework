@@ -39,7 +39,7 @@ implements ISlashCommandsDriver
     /**
      * @inheritdoc
      */
-    public abstract function register(): void;
+    public abstract function register(): array;
 
     /**
      * @inheritdoc

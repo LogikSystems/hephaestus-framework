@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Commands\Traits;
+namespace Hephaestus\Framework\Commands\Traits;
 
-use App\Commands\Components\ConsoleLogRecord;
+use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;
 use Psr\Log\LogLevel;

@@ -25,10 +25,9 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
     /**
      * @inheritdoc
      */
-    public function register(): void
+    public function register(): array
     {
         $promises = [];
-
         $globalCommandRepository = await($this->hephaestus->discord->application->commands->freshen());
         // $this->hephaestus->discord->getLoop()->addPeriodicTimer(0, fn () => $this->hephaestus->log("cc"));
 
@@ -50,6 +49,7 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
                 onRejected: fn () => $this->hephaestus->log("<bg=red> Failed while updating Slash Commands ! </>", Level::Warning),
             );
 
+        return $promises;
 
         // all($promises)
         //     ->then(

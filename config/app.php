@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'version' => app('git.version'),
+    'version' => "0.0.1",
 
     /*
     |--------------------------------------------------------------------------
@@ -67,7 +67,7 @@ return [
     */
 
     'providers' => [
-        App\Providers\AppServiceProvider::class,
+        Hephaestus\Framework\Providers\HephaestusServiceProvider::class,
     ],
 
     'log_level' => env('LOG_LEVEL', 'debug'),
