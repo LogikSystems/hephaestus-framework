@@ -3,7 +3,6 @@
 namespace Hephaestus\Framework\Providers;
 
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
-use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Hephaestus\Framework\Hephaestus;
 use Illuminate\Support\ServiceProvider;
 
@@ -50,11 +49,11 @@ class HephaestusServiceProvider extends ServiceProvider
         );
 
         $this->app->singleton(Hephaestus::class, fn () => \Hephaestus\Framework\Hephaestus::make());
+
         $this->app->singleton(ISlashCommandsDriver::class, function () {
             $className = config('hephaestus.drivers.APPLICATION_COMMAND');
             return app($className, ['hephaestus' => app(Hephaestus::class)]);
         });
-        // $this->app->singleton(ConsoleLogRecord::class)
     }
 
     /**
@@ -74,14 +73,6 @@ class HephaestusServiceProvider extends ServiceProvider
         $this->publishes([
             $this->packageRootPathName('resources/views/components') => base_path('resources/views/components')
         ], 'hephaestus-views');
-
-
-        // $this->publishes([
-        //     __DIR__ . '/../docker-compose.yml',
-        //     __DIR__ . 'Dockerfile',
-        //     __DIR__ . 'hephaestus-startcontainer.sh',
-        //     __DIR__ . 'hephaestus-buildcontainer.sh',
-        // ], 'hephaestus-docker-files');
 
         $this->commands([
             \Hephaestus\Framework\Commands\ListSlashCommandsCommand::class,
