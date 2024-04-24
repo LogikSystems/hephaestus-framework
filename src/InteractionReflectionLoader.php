@@ -99,7 +99,7 @@ class InteractionReflectionLoader
     public function resolvePathName(HandledInteractionType $type)
     {
         return match ($type) {
-            HandledInteractionType::APPLICATION_COMMAND                 =>  $this->makePathName("SlashCommands"),
+            HandledInteractionType::APPLICATION_COMMAND                 =>  $this->makePathName("ApplicationCommands"),
             HandledInteractionType::APPLICATION_COMMAND_AUTOCOMPLETE    =>  $this->makePathName("Autocompletes"),
             HandledInteractionType::MESSAGE_COMPONENT                   =>  $this->makePathName("MessageComponents"),
             HandledInteractionType::MODAL_SUBMIT                        =>  $this->makePathName("ModalSubmits"),
