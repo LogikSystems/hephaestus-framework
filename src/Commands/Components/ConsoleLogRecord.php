@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Commands\Components;
+namespace Hephaestus\Framework\Commands\Components;
 
 use Illuminate\Console\Contracts\NewLineAware;
 use Illuminate\Console\View\Components\Component;

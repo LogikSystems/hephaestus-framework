@@ -1,9 +1,9 @@
 <?php
 
-namespace App\InteractionHandlers\SlashCommands;
+namespace Hephaestus\Framework\InteractionHandlers\SlashCommands;
 
 use Hephaestus\Framework\Enums\HandledInteractionType;
-use Hephaestus\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Builders\MessageBuilder;
 use Discord\Helpers\Collection;

@@ -1,27 +1,15 @@
 <?php
 
-namespace App\Commands;
+namespace Hephaestus\Framework\Commands;
 
-use Hephaestus\Framework\Enums\HandledInteractionType;
-use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
+
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Hephaestus;
-use Discord\Builders\CommandBuilder;
-use Discord\Discord;
-use Discord\Parts\Interactions\Command\Command as CommandCommand;
 use Discord\Repository\Interaction\GlobalCommandRepository;
-use Exception;
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Foundation\PackageManifest;
-use Illuminate\Support\Facades\Log;
-use LaravelZero\Framework\Commands\Command;
-use Monolog\Handler\StreamHandler;
-use Monolog\Level;
+use Hephaestus\Framework\InteractionReflectionLoader;
+use Illuminate\Console\Command;
 
-use function React\Async\async;
-use function React\Async\await;
-
-class Commands extends Command
+class ListSlashCommandsCommand extends Command
 {
 
     // use Logs;
@@ -47,12 +35,10 @@ class Commands extends Command
      */
     public function handle()
     {
-        // dd($this->app->getBindings());
-        // dd(app(PackageManifest::class));
         /**
          * @var Hephaestus
          */
-        $hephaestus = $this->app->make(Hephaestus::class);
+        $hephaestus = app(Hephaestus::class);
         // $hephaestus->setOutput($this->output);
 
         /**
@@ -102,6 +88,13 @@ class Commands extends Command
          * @var ISlashCommandsDriver
          */
         $slashCommandDriver = app(ISlashCommandsDriver::class);
+
+        /**
+         * @var InteractionReflectionLoader
+         */
+        $loader = app(Hephaestus::class)->loader;
+
+        dd($loader->getClasses($slashCommandDriver->getHandledInteractionType()));
 
         $slashCommandDriverCommands = $slashCommandDriver
             ->getCommandsByName()

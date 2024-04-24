@@ -1,8 +1,8 @@
 <?php
 
-namespace App\InteractionHandlers\MessageComponents;
+namespace Hephaestus\Framework\InteractionHandlers\MessageComponents;
 
-use Hephaestus\Framework\InteractionHandlers\MessageComponents\AbstractMessageComponent;
+use Hephaestus\Framework\Abstractions\MessageComponents\AbstractMessageComponent;
 use Discord\Builders\MessageBuilder;
 use Discord\Parts\Interactions\Interaction;
 

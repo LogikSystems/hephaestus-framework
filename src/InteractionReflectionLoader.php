@@ -3,15 +3,15 @@
 
 namespace Hephaestus\Framework;
 
-
+use Exception;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
-use Hephaestus\Framework\InteractionHandlers\AbstractInteractionDriver;
-use Hephaestus\Framework\InteractionHandlers\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
-use Hephaestus\Framework\InteractionHandlers\ApplicationCommands\AbstractSlashCommand;
-use Hephaestus\Framework\InteractionHandlers\ApplicationCommands\Drivers\ISlashCommandsDriver;
-use Hephaestus\Framework\InteractionHandlers\MessageComponents\AbstractMessageComponent;
-use Hephaestus\Framework\InteractionHandlers\MessageComponents\Drivers\MessageComponentsDriver;
+use Hephaestus\Framework\Abstractions\AbstractInteractionDriver;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
+use Hephaestus\Framework\Abstractions\MessageComponents\AbstractMessageComponent;
+use Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver;
 use Hephaestus\Framework\Hephaestus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -51,7 +51,8 @@ class InteractionReflectionLoader
 
         $existing = Cache::get($key);
         if (is_null($existing)) {
-            Cache::forever($key, $this->getClasses($type));
+            $classes = $this->getClasses($type);
+            Cache::forever($key, $classes);
             return $this->load($type);
         }
         return collect($existing)
@@ -61,13 +62,28 @@ class InteractionReflectionLoader
 
     public function getClasses(HandledInteractionType $type): array
     {
-        $pathName = $this->resolvePathName($type);
-        if (!File::isDirectory($pathName)) {
-            Log::warning("No directory found for Handler Type {$type->name}, tried {$pathName}. Do the directory exists ?", [$type, $pathName]);
-            return [];
+        /**
+         * Key for handlers in :
+         * config/hephaestus.php
+         */
+        $configHandlerTypeKey = Str::of(ucwords(strtolower($type->name), '_'))
+            ->replace('_', '')
+            ->plural()
+            ->toString();
+        $workspacePath = $this->resolvePathName($type);
+        $classes = collect([]);
+        if (File::isDirectory(app_path())) { // * We're loading an app configuration (checking directories and namespaces)
+            $workspaceClasses = $this->extractClasses($type);
+            $classes->merge($workspaceClasses);
+        } else { // * We're loading from a literal configuration (injecting from `config/hephaestus.php` to service container)
+            $classes->merge(config("hephaestus.handlers.{$configHandlerTypeKey}"));
         }
 
-        return $this->extractClasses($type)
+
+        // * Key to bind from vendor or namespace
+        //    dd($configHandlerTypeKey, config("hephaestus.handlers.{$configHandlerTypeKey}"), $workspacePath);
+
+        return $classes
             ->unique()
             ->all();
     }
@@ -138,8 +154,7 @@ class InteractionReflectionLoader
                 return !$class->isAbstract()
                     && $class->implementsInterface(InteractionHandler::class)
                     && $class->isSubclassOf($this->resolveAbstraction($type));
-            })
-            ;
+            });
         $resolvedCount = count($classes);
         if (!$classes->count()) {
             $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
@@ -198,7 +213,7 @@ class InteractionReflectionLoader
             ->map(fn ($class) => app($class)); // Cast into appropriate container service
     }
 
-    public function getDriver(HandledInteractionType $type) :  AbstractInteractionDriver|null
+    public function getDriver(HandledInteractionType $type): AbstractInteractionDriver|null
     {
         return match ($type) {
             HandledInteractionType::APPLICATION_COMMAND => app(ISlashCommandsDriver::class),

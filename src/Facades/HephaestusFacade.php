@@ -15,4 +15,5 @@ class HephaestusFacade extends Facade
     {
         return 'hephaestus';
     }
+
 }

@@ -2,7 +2,7 @@
 
 namespace Hephaestus\Framework;
 
-use App\Commands\Components\ConsoleLogRecord;
+use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\InteractionDispatcher;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\SlashCommandsDriver;
@@ -21,19 +21,19 @@ use React\Stream\WritableStreamInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
+use function React\Async\await;
 use function React\Promise\all;
 
 class Hephaestus
 {
     // use HasLog;
 
-    /**
-     *
-     */
+
+
     public function __construct(
         public ?OutputInterface $command = null,
-        public ?Discord $discord = null,
         public ?string $token = null,
+        public ?Discord $discord = null,
         // public ?array $slashCommands = null,
         // public ?array $interactionHandlers = null,
         public ?ReadableStreamInterface $inputStream = null,
@@ -44,7 +44,6 @@ class Hephaestus
     ) {
         $this->dispatcher = new InteractionDispatcher($this);
         $this->loader = new InteractionReflectionLoader($this);
-
         // $this->loopInterface = new EvLoop
     }
 
@@ -72,6 +71,8 @@ class Hephaestus
         $this->beforeConnection();
 
         $this->log("Logging in...");
+
+
         // dd(getenv());
         // dd(config('discord'));
         $loggerChannelNameForDiscord = config("discord.logger") ?? "null";
@@ -100,7 +101,7 @@ class Hephaestus
     public function handleDiscordPHPLoop()
     {
         // $this->discord->application->commands->create(new CommandCommand($this->discord))
-        $this->discord->on('ready', function () {
+        $this->discord->on('ready', function (...$args) {
             /**
              * @var MessageComponentsDriver $msg
              */
@@ -112,7 +113,11 @@ class Hephaestus
             // $this->cacheInteractionHandlers();
             // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
 
-            $this->registerApplicationSlashCommands();
+            all($this->registerApplicationSlashCommands())
+                ->then(
+                    // * Bind our entrypoint
+                    fn () => $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction))
+                );
 
             // $this->discord->guilds->get("id", 1230346340933042269) #SDA
             //     ->channels
@@ -131,8 +136,6 @@ class Hephaestus
 
         });
 
-        // Bind our entrypoint
-        $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction));
 
         // $this->discord->getLoop()->addPeriodicTimer(5, function () {
         //     $this->command->writeln("<fg=red>test</>");
@@ -226,20 +229,6 @@ class Hephaestus
 
         return $this;
     }
-
-    // /**
-    //  * Load Interactions Handlers into cache
-    //  * callback received when a new interaction is created
-    //  * @see <\App\Hephaestus::handleDiscordPHPLoop>
-    //  * @see <\Discord\WebSockets\Event>
-    //  */
-    // public function cacheInteractionHandlers(): self
-    // {
-    //     // InteractionReflectionLoader::load(HandledInteractionType::APPLICATION_COMMAND);
-    //     $this->loader->loadAll();
-    //     return $this;
-    // }
-
 
     /**
      * Send a message to the console.
