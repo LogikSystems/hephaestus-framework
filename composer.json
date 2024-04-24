@@ -18,6 +18,10 @@
             "homepage": "https://github.com/lilierd"
         }
     ],
+    "support": {
+        "issues": "https://github.com/logiksystems/hephaestus-framework/issues",
+        "source": "https://github.com/logiksystems/hephaestus-framework"
+    },
     "type": "framework",
     "license": "MIT",
     "require": {
@@ -41,7 +45,7 @@
     },
     "extra": {
         "laravel": {
-            "providers" : [
+            "providers": [
                 "Hephaestus\\Framework\\Providers\\HephaestusServiceProvider"
             ]
         }
