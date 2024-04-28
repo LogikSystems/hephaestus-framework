@@ -11,8 +11,14 @@
 |
 */
 
-$app = new LaravelZero\Framework\Application(
-    dirname(__DIR__)
+$app = new \Hephaestus\Framework\HephaestusApplication(
+    base_path: dirname(__DIR__),
+);
+
+/** **/
+$app->singleton(
+    Hephaestus\Framework\HephaestusApplication::class,
+    fn() => $app,
 );
 
 /*
@@ -28,7 +34,7 @@ $app = new LaravelZero\Framework\Application(
 
 $app->singleton(
     Illuminate\Contracts\Console\Kernel::class,
-    LaravelZero\Framework\Kernel::class
+    \Hephaestus\Framework\HephaestusKernel::class,
 );
 
 $app->singleton(

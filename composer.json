@@ -26,21 +26,24 @@
     "license": "MIT",
     "require": {
         "php": "^8.2.0",
+        "illuminate/database": "^10.0",
+        "illuminate/log": "^10.0.0",
+        "laravel-zero/framework": "^10.0.0",
         "nunomaduro/termwind": "^1.0.0",
         "react/async": "^4.2",
         "simplito/elliptic-php": "^1.0",
-        "team-reflex/discord-php": "^7.3",
-        "laravel-zero/framework": "^10.0.0"
+        "team-reflex/discord-php": "^7.3"
     },
     "require-dev": {
-        "illuminate/log": "^10.0.0",
+        "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.15.1",
         "mockery/mockery": "^1.6",
         "pestphp/pest": "^2.22"
     },
     "autoload": {
         "psr-4": {
-            "Hephaestus\\Framework\\": "src/"
+            "Hephaestus\\Framework\\": "src/",
+            "App\\": "app/"
         }
     },
     "extra": {

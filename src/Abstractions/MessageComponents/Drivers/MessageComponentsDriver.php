@@ -35,6 +35,4 @@ class MessageComponentsDriver extends AbstractInteractionDriver
             // ->each(fn ($class) => $class)
             ->first(fn (AbstractMessageComponent $c) => strcmp($c->component_custom_id, $interaction->data?->custom_id) === 0);
     }
-
-
 }

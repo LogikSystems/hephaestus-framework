@@ -34,9 +34,4 @@ implements InteractionHandler
      * @inheritdoc
      */
     public string $description;
-
-    /**
-     * @inheritdoc
-     */
-    public abstract function handle(Interaction $interaction): void;
 }

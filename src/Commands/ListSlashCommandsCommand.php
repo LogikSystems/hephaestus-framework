@@ -94,7 +94,7 @@ class ListSlashCommandsCommand extends Command
          */
         $loader = app(Hephaestus::class)->loader;
 
-        dd($loader->getClasses($slashCommandDriver->getHandledInteractionType()));
+        // dd($loader->getClasses($slashCommandDriver->getHandledInteractionType()));
 
         $slashCommandDriverCommands = $slashCommandDriver
             ->getCommandsByName()

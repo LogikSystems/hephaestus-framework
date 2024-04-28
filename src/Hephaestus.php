@@ -11,12 +11,18 @@ use Hephaestus\Framework\InteractionReflectionLoader;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
+use Hephaestus\Framework\Events\DiscordInteractionEvent;
+use Hephaestus\Framework\Listeners\DiscordInteractionEventListener;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Facades\Event as FacadesEvent;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LogLevel;
 use React\EventLoop\LoopInterface;
+use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
+use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
@@ -39,11 +45,15 @@ class Hephaestus
         public ?ReadableStreamInterface $inputStream = null,
         public ?WritableStreamInterface $outputStream = null,
         public ?InteractionReflectionLoader $loader = null,
-        public ?InteractionDispatcher $dispatcher = null,
+        // public ?InteractionDispatcher $dispatcher = null,
         public ?LoopInterface $loopInterface = null,
+        public ?HephaestusApplication $hephaestusApplication = null
     ) {
-        $this->dispatcher = new InteractionDispatcher($this);
-        $this->loader = new InteractionReflectionLoader($this);
+        // $this->dispatcher = new InteractionDispatcher($this);
+        $this->loader = new InteractionReflectionLoader(app());
+
+        $this->hephaestusApplication = app();
+
         // $this->loopInterface = new EvLoop
     }
 
@@ -51,9 +61,12 @@ class Hephaestus
      * Create a new instances
      * Used for IoC (?)
      */
-    public static function make(?OutputInterface $output = null): self
-    {
-        return new static(command: $output);
+    public static function make(
+        ?OutputInterface $output = null
+    ): self {
+        return new static(
+            command: $output
+        );
     }
 
     public function setOutput(OutputInterface $output)
@@ -68,7 +81,6 @@ class Hephaestus
 
     public function connect(): void
     {
-        $this->beforeConnection();
 
         $this->log("Logging in...");
 
@@ -85,9 +97,7 @@ class Hephaestus
             'logger'        => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
-        // $this->discord->handleWsMessage()
         $this->log("Logged in.");
-        $this->log("Now sharing Discord as singleton in app container.");
 
         $this->registerStream();
         // var_dump(self::getContainerCacheKey(), Cache::get(join(".", [self::getContainerCacheKey(),"APPLICATION_COMMAND"])));
@@ -114,10 +124,16 @@ class Hephaestus
             // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
 
             all($this->registerApplicationSlashCommands())
-                ->then(
+                ->then(function () {
                     // * Bind our entrypoint
-                    fn () => $this->discord->on(Event::INTERACTION_CREATE, fn (Interaction $interaction) => $this->dispatcher->handle($interaction))
-                );
+                    $this->discord->on(Event::INTERACTION_CREATE, function (Interaction $interaction, Discord $discord) {
+                        $this->log("Dispatching event through Laravel event dispatcher");
+                        dump(get_class($discord), get_class($interaction));
+                        $event = new DiscordInteractionEvent($interaction, $discord);
+                        FacadesEvent::dispatch($event);
+                        $this->log("Dispatched event through Laravel event dispatcher");
+                    });
+                });
 
             // $this->discord->guilds->get("id", 1230346340933042269) #SDA
             //     ->channels
@@ -159,7 +175,7 @@ class Hephaestus
 
     public function registerApplicationSlashCommands(): void
     {
-        $this->log("Loading application slash commands");
+        $this->log("Reloading application slash commands");
         /**
          * @var SlashCommandsDriver $slashCommands
          */
@@ -177,55 +193,10 @@ class Hephaestus
             return $this;
         }
 
-        if ($this->outputStream) {
-            return $this;
-        }
-
-        /**
-         * @var Kernel $kernel;
-         */
-        $kernel = app(Kernel::class);
-
         // ResourceStream
-        // $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
-
-        /**
-         * @var StreamOutput $streamOutput
-         */
-        // $streamOutput = app(StreamOutput::class);
-        // $streamOutput->
-        // $streamOutput->write()
-
-        $this->discord->getLoop();
-        // $this->discord->getLoop()->addWriteStream($streamOutput->getStream(), function ($stream) {
-        // dd($stream);
-        // fwrite($stream, "<bg=white> Je suis au bon endroit ? </>"); La réponse était non.
-        // });
-        // $this->discord->getLoop()
-
-
-        // $streamOutput->writeln("<bg=red> ATTENTION ! </>");
-        // dd();
-
-        // $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
-        // dd($kernel);
-
-        // $composite = new CompositeStream($this->inputStream, $this->outputStream);
-
-        // $this->outputStream->on('data', fn ($data) => var_dump($data));
-
-        // $this->outputStream->on("drain", function () {
-        // $this->command->writeln("Stream is now ready to accept more data");
-        // });
-        // $this->outputStream->write("test !", []);
-        // $this->outputStream->
-
-        // $this->outputStream->on("data", function ($data) {
-        // });
-
-        // $this->outputStream->on("data", function($data) {
-        //     $this->log($data);
-        // });
+        $this->inputStream = new ReadableResourceStream(STDIN, $this->discord->getLoop());
+        $this->outputStream = new WritableResourceStream(STDOUT, $this->discord->getLoop());
+        // $this->discord->getLoop();
 
         return $this;
     }
@@ -266,7 +237,7 @@ class Hephaestus
             with(new ConsoleLogRecord($this->command))->render($config, $message);
         }
 
-        // Log::log($level->name, strip_tags($message), $context);
+        Log::log($level->name, strip_tags($message), $context);
     }
 
     public static function getHandlerCacheKey(HandledInteractionType $type)

@@ -1,23 +1,24 @@
 <?php
 
-namespace Hephaestus\Framework\InteractionHandlers\SlashCommands;
+namespace App\InteractionHandlers\SlashCommands;
 
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Builders\MessageBuilder;
+use Discord\Discord;
 use Discord\Helpers\Collection;
 use Discord\Parts\Embed\Embed;
 use Discord\Parts\Interactions\Command\Command;
 use Discord\Parts\Interactions\Interaction;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
 
-class HelpSlashCommand extends AbstractSlashCommand
+class Test extends AbstractSlashCommand
 {
     /**
      * @inheritdoc
      */
-    public string $name = "help";
+    public string $name = "test";
 
     /**
      * @inheritdoc

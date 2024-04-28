@@ -3,8 +3,11 @@
 namespace Hephaestus\Framework\Providers;
 
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
+use Hephaestus\Framework\Abstractions\HephaestusApplication;
 use Hephaestus\Framework\Hephaestus;
+use Illuminate\Support\Facades\Pipeline;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class HephaestusServiceProvider extends ServiceProvider
 {
@@ -48,7 +51,9 @@ class HephaestusServiceProvider extends ServiceProvider
             "hephaestus-discord"
         );
 
-        $this->app->singleton(Hephaestus::class, fn () => \Hephaestus\Framework\Hephaestus::make());
+        $this->app->singleton(Hephaestus::class, fn () => \Hephaestus\Framework\Hephaestus::make(
+            output: app(OutputInterface::class),
+        ));
 
         $this->app->singleton(ISlashCommandsDriver::class, function () {
             $className = config('hephaestus.drivers.APPLICATION_COMMAND');

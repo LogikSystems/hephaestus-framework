@@ -9,6 +9,4 @@ abstract class AbstractMessageComponent implements InteractionHandler {
 
     public string $component_custom_id;
 
-    public abstract function handle(Interaction $interaction) : void;
-
 }

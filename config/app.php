@@ -74,4 +74,15 @@ return [
 
     'verbosity_level' => env('APP_VERBOSITY', 'debug'),
 
+
+
+    // "cache" => [
+    //     'default' => 'file',
+    //     'stores' => [
+    //         'array' => [
+    //             'driver' => 'file',
+    //         ],
+    //     ],
+    // ]
+
 ];
