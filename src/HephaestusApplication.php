@@ -12,9 +12,11 @@ use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\InteractionReflectionLoader;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Foundation\Bootstrap\RegisterFacades;
 use Illuminate\Support\Collection;
 use LaravelZero\Framework\Application as LaravelZeroApplication;
 use Illuminate\Support\Str;
+use LaravelZero\Framework\Providers\GitVersion\GitVersionServiceProvider;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 
 class HephaestusApplication
@@ -29,8 +31,11 @@ extends LaravelZeroApplication
         parent::__construct(
             basePath: $base_path
         );
+        $this->singleton(HephaestusApplication::class, fn() => $this);
 
-        $this->afterBootstrapping(RegisterInteractionHandlers::class, function() {
+        $this->afterBootstrapping(GitVersionServiceProvider::class, function() {
+
+
             $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
 
             $this->singleton(LoggerProxy::class, fn() => new LoggerProxy());
@@ -39,10 +44,10 @@ extends LaravelZeroApplication
         });
     }
 
-    public function __destruct()
-    {
-        $this->make(LoggerProxy::class)->log("critical", "HephaestusApplication destructor called", [__METHOD__]);
-    }
+    // public function __destruct()
+    // {
+    //     $this->make(LoggerProxy::class)->log("critical", "HephaestusApplication destructor called", [__METHOD__]);
+    // }
 
     public function isDownForMaintenance(): bool
     {
@@ -73,6 +78,9 @@ extends LaravelZeroApplication
         );
     }
 
+    /**
+     *
+     */
     public function reloadSlashCommands()
     {
         $this->slashCommandsDriver->register();
