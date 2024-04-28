@@ -12,6 +12,7 @@ use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\InteractionReflectionLoader;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Foundation\Bootstrap\RegisterFacades;
 use Illuminate\Support\Collection;
 use LaravelZero\Framework\Application as LaravelZeroApplication;
 use Illuminate\Support\Str;
@@ -29,8 +30,11 @@ extends LaravelZeroApplication
         parent::__construct(
             basePath: $base_path
         );
+        $this->singleton(HephaestusApplication::class, fn() => $this);
 
         $this->afterBootstrapping(RegisterInteractionHandlers::class, function() {
+
+
             $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
 
             $this->singleton(LoggerProxy::class, fn() => new LoggerProxy());
@@ -73,6 +77,9 @@ extends LaravelZeroApplication
         );
     }
 
+    /**
+     *
+     */
     public function reloadSlashCommands()
     {
         $this->slashCommandsDriver->register();
