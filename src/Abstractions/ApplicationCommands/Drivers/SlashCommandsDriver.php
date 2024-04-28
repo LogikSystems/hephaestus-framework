@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Monolog\Level;
 use React\EventLoop\TimerInterface;
 use React\Promise\Deferred;
+use React\Promise\ExtendedPromiseInterface;
 use React\Promise\Promise;
 
 use function React\Async\async;
@@ -36,8 +37,8 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
             $globalCommandRepository,
         )
             ->then(
-                onFulfilled: fn () => $this->hephaestus->log("<bg=green> Successed while updating Global Commands Repository ! </>", Level::Info),
-                onRejected: fn () => $this->hephaestus->log("<bg=red> Failed while updating Global Commands Repository ! </>", Level::Warning),
+                onFulfilled: fn () => $this->hephaestus->log("info", "<bg=green> Successed while updating Global Commands Repository ! </>", [__METHOD__]),
+                onRejected: fn () => $this->hephaestus->log("warning", "<bg=red> Failed while updating Global Commands Repository ! </>", [__METHOD__]),
             );
 
         $promises[] = $this->createOrUpdate(
@@ -45,80 +46,35 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
             globalCommandRepository: $globalCommandRepository,
         )
             ->then(
-                onFulfilled: fn () => $this->hephaestus->log("<bg=green> Successed while updating Slash Commands ! </>", Level::Info),
-                onRejected: fn () => $this->hephaestus->log("<bg=red> Failed while updating Slash Commands ! </>", Level::Warning),
+                onFulfilled: fn () => $this->hephaestus->log("info", "<bg=green> Successed while updating Slash Commands ! </>", [__METHOD__]),
+                onRejected: fn () => $this->hephaestus->log("warning", "<bg=red> Failed while updating Slash Commands ! </>", [__METHOD__]),
             );
 
         return $promises;
-
-        // all($promises)
-        //     ->then(
-        //         onFulfilled: fn () => $this->hephaestus->log("<bg=green> Successed while updating registry ! </>", Level::Info),
-        //         onRejected: fn () => $this->hephaestus->log("<bg=red> Failed while updating registry ! </>", Level::Warning),
-        //     );
-
-
-        // all($this->sleep())
-        //     ->then(
-        //         onFulfilled: fn () => $this->hephaestus->log("<bg=green> Successed while updating registry ! </>", Level::Info),
-        //         onRejected: fn () => $this->hephaestus->log("<bg=red> Failed while updating registry ! </>", Level::Warning),
-        //     );
-    }
-
-    public function sleep()
-    {
-        $_p = [];
-        for ($i = 0; $i < 10; $i++) {
-            $_p[] = $p = new Promise(
-                resolver: function (callable $resolve, callable $reject) {
-                    // async(fn () => sleep(10));
-
-                    $time = rand(0, 10);
-                    $this->hephaestus->command->writeln("sleeping <fg=green>{$time}</>s");
-                    // sleep($time);
-                    async(function () use ($time, $resolve) {
-                        sleep($time);
-                        $resolve($time);
-                    });
-                    $this->hephaestus->command->writeln("finished");
-                    // $deferred = new Deferred($reject);
-                    // $deferred->resolve("a");
-                    // $resolve();
-                },
-                canceller: function () {
-                    throw new Exception("Promise cancelled !");
-                }
-            );
-        }
-        return $_p;
     }
 
     public function diffDelete(Collection $commandsByName, GlobalCommandRepository $globalCommandRepository)
     {
         $promises = [];
-        $this->hephaestus->log("Checking for GCR Commands... It has <fg=green>" . $globalCommandRepository->count() . "</> commands.");
+        $this->hephaestus->log("debug", "Checking for GCR Commands... It has <fg=green>" . $globalCommandRepository->count() . "</> commands.", [__METHOD__]);
         foreach ($globalCommandRepository as $gcr_command) {
             $is_present = $commandsByName->has($gcr_command->name);
             $color = $is_present ? "green" : "red";
             $str = $is_present ? "Yes" : "No";
-            $this->hephaestus->log("Checking if we have also have the {$gcr_command->name} found on GCR : {$str} <bg={$color}> {$gcr_command->name} </>.");
+            $this->hephaestus->log("debug", "Checking if we have also have the {$gcr_command->name} found on GCR : {$str} <bg={$color}> {$gcr_command->name} </>.", [__METHOD__]);
 
             // $promise = new Promise(fn () => $this->hephaestus->log("Je suis pas perdu."),);
 
             if (!$is_present) {
                 $promises[] = $promise = $globalCommandRepository->delete($gcr_command);
                 $promise->done(
-                    onFulfilled: fn () => $this->hephaestus->log("<fg=green>Deleted command {$gcr_command->name}</>"),
-                    onRejected: fn () => $this->hephaestus->log("<fg=red>>Rejected deletion of command {$gcr_command->name}</>")
+                    onFulfilled: fn () => $this->hephaestus->log("info", "Deleted command {$gcr_command->name}", [__METHOD__]),
+                    onRejected: fn () => $this->hephaestus->log("warning", "Rejected deletion of command {$gcr_command->name}", [__METHOD__])
                 );
             }
         }
 
         return all($promises);
-    }
-
-    public function checkOne()
-    {
     }
 
     public function createOrUpdate(Collection $commandsByName, GlobalCommandRepository $globalCommandRepository)
@@ -127,26 +83,19 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
         foreach ($commandsByName as $commandName => $command) {
             $promises[] = $promise = $this->updateOne($globalCommandRepository, $commandName, $command);
             $promise->done(
-                onFulfilled: fn ()  => $this->hephaestus->log("<fg=green>Added or upddated slash command {$commandName}</>"),
-                onRejected: fn ()   => $this->hephaestus->log("<fg=red>Can't add or update slash command {$commandName}</>")
+                onFulfilled: fn ()  => $this->hephaestus->log("debug", "Added or upddated slash command {$commandName}", [__METHOD__]),
+                onRejected: fn ()   => $this->hephaestus->log("warning", "Can't add or update slash command {$commandName}", [__METHOD__])
             );
         }
         return all($promises);
     }
 
-
-    function updateOne(GlobalCommandRepository $globalCommandRepository, string $commandName, Command $command)
+    /**
+     * Update a command
+     *
+     */
+    function updateOne(GlobalCommandRepository $globalCommandRepository, string $commandName, Command $command) : ExtendedPromiseInterface
     {
-        // $c = new Command(
-        //     $this->hephaestus->discord,
-        //     CommandBuilder::new()
-        //         ->setName($command->name)
-        //         ->setDescription($command->description)
-        //         ->setType(Command::CHAT_INPUT)
-        //         ->setDefaultMemberPermissions($command->default_member_permissions)
-        //         ->toArray()
-        // );
-        // dd($command->getRawAttributes());
         return $globalCommandRepository
             ->save($command);
     }

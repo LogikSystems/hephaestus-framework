@@ -30,11 +30,9 @@ class MessageComponentsDriver extends AbstractInteractionDriver
         // dd($interaction);
         $collect = $this->getRelatedHandlers();
         // dd($collect->first());
-        $this->hephaestus->log("Filtering between: <fg=blue>".$collect->count()."</> interaction handlers.", Level::Debug, [$interaction]);
+        $this->hephaestus->log("debug", "Filtering between: <fg=blue>".$collect->count()."</> interaction handlers.", [$interaction]);
         return $collect
             // ->each(fn ($class) => $class)
             ->first(fn (AbstractMessageComponent $c) => strcmp($c->component_custom_id, $interaction->data?->custom_id) === 0);
     }
-
-
 }

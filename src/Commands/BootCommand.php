@@ -2,16 +2,23 @@
 
 namespace Hephaestus\Framework\Commands;
 
+use Discord\Parts\Interactions\Interaction;
+use Exception;
+use HelpCommand;
+use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\Hephaestus;
+use Hephaestus\Framework\InteractionHandlers\SlashCommands\HelpSlashCommand;
+use Hephaestus\Framework\Models\HelpCommandModel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Console\Signals;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Console\Command;
+use LaravelZero\Framework\Commands\Command;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class BootCommand extends Command
 {
-
-    // use Logs;
 
     /**
      * The signature of the command.
@@ -32,11 +39,16 @@ class BootCommand extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(HephaestusApplication $hephaestusApplication, Hephaestus $hephaestus)
     {
-        /**
-         * @var Application $app
-         */
+        // /**
+        //  * @var OutputInterface $output
+        //  */
+        // $output = app(OutputInterface::class);
+
+        // die;
+
+        // dd($hephaestusApplication);
 
         // $this->output;
         // dd($this->app->getBindings());
@@ -47,12 +59,16 @@ class BootCommand extends Command
         /**
          * @var Hephaestus
          */
-        $hephaestus = app(Hephaestus::class);
+        // $hephaestus = app(Hephaestus::class);
         // $hephaestus->setOutput($this->output);
-
 
         // $hephaestus->log("Starting bot.", Level::Info);
         $hephaestus->connect();
+
+        // dd($hephaestusApplication->isBooted());
+
+        // dd(new HelpCommandModel());
+
     }
 
     /**

@@ -54,6 +54,7 @@ return [
             'channels' => [
                 // "stdout",
                 "daily",
+                "single",
             ],
             'ignore_exceptions' => false,
         ],

@@ -10,8 +10,10 @@ use Hephaestus\Framework\Abstractions\AbstractInteractionDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
+use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\Abstractions\MessageComponents\AbstractMessageComponent;
 use Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver;
+use Hephaestus\Framework\Contracts\BaseInteractionMiddleware;
 use Hephaestus\Framework\Hephaestus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -27,15 +29,16 @@ use ReflectionClass;
  */
 class InteractionReflectionLoader
 {
+    use InteractsWithLoggerProxy;
 
     public function __construct(
-        public Hephaestus $hephaestus,
+        public HephaestusApplication $hephaestusApplication,
     ) {
     }
 
-    public function make(Hephaestus $hephaestus): self
+    public function make(HephaestusApplication $hephaestusApplication): self
     {
-        return new static($hephaestus);
+        return new static($hephaestusApplication);
     }
 
     public function loadAll()
@@ -47,14 +50,20 @@ class InteractionReflectionLoader
 
     public function load(HandledInteractionType $type): array
     {
-        $key = Hephaestus::getHandlerCacheKey($type);
+        $key = $this->hephaestusApplication->getCachedInteractionHandlersPath($type);
 
-        $existing = Cache::get($key);
+        $existing = $this->hephaestusApplication->make('cache')->get($key);
+
+        // dd($existing, $key);
+
         if (is_null($existing)) {
             $classes = $this->getClasses($type);
             Cache::forever($key, $classes);
             return $this->load($type);
         }
+
+        // dd($existing);
+
         return collect($existing)
             ->unique()
             ->toArray();
@@ -70,21 +79,38 @@ class InteractionReflectionLoader
             ->replace('_', '')
             ->plural()
             ->toString();
-        $workspacePath = $this->resolvePathName($type);
+        $workspacePath = $this->resolvePathFor($type);
         $classes = collect([]);
         if (File::isDirectory(app_path())) { // * We're loading an app configuration (checking directories and namespaces)
             $workspaceClasses = $this->extractClasses($type);
-            $classes->merge($workspaceClasses);
-        } else { // * We're loading from a literal configuration (injecting from `config/hephaestus.php` to service container)
-            $classes->merge(config("hephaestus.handlers.{$configHandlerTypeKey}"));
+            $classes = $classes->concat($workspaceClasses);
+        }
+        if (File::isDirectory(config_path())) { // * We're loading from a literal configuration (injecting from `config/hephaestus.php` to service container)
+            $classes = $classes->concat(config("hephaestus.handlers.{$configHandlerTypeKey}"));
         }
 
-
+        // dd($classes);
         // * Key to bind from vendor or namespace
         //    dd($configHandlerTypeKey, config("hephaestus.handlers.{$configHandlerTypeKey}"), $workspacePath);
+        $this->log("debug", "Before :" . $classes->count(), [__METHOD__]);
+        // try {
+            // $duplicates = $classes->map(fn ($c) => new $c)
+            //     ->duplicates(fn($class) =>$class->getDiscriminator())
+            //     ;
+            //     dump($duplicates);
+            // if($duplicates->count() > 0) {
+            //     $message = $duplicates->reduce(fn (InteractionHandler $class) => class_basename($class) . " duplicates {$class->getDiscriminatorAttributeName()} for {$class->getDiscriminator()}\n", "");
+
+            //     $this->log("critical", $message, [__METHOD__]);
+            //     // throw new Exception($message);
+            // }
+        // } catch (Exception $e) {
+
+        //     exit(-1);
+        // }
+        // $this->log("debug", "After :" . $duplicates->count(), [__METHOD__]);
 
         return $classes
-            ->unique()
             ->all();
     }
 
@@ -96,10 +122,10 @@ class InteractionReflectionLoader
     /**
      * Resolve
      */
-    public function resolvePathName(HandledInteractionType $type)
+    public function resolvePathFor(HandledInteractionType $type)
     {
         return match ($type) {
-            HandledInteractionType::APPLICATION_COMMAND                 =>  $this->makePathName("ApplicationCommands"),
+            HandledInteractionType::APPLICATION_COMMAND                 =>  $this->makePathName("SlashCommands"),
             HandledInteractionType::APPLICATION_COMMAND_AUTOCOMPLETE    =>  $this->makePathName("Autocompletes"),
             HandledInteractionType::MESSAGE_COMPONENT                   =>  $this->makePathName("MessageComponents"),
             HandledInteractionType::MODAL_SUBMIT                        =>  $this->makePathName("ModalSubmits"),
@@ -123,7 +149,7 @@ class InteractionReflectionLoader
      */
     public function extractClasses(HandledInteractionType $type): Collection
     {
-        $path = $this->resolvePathName($type);
+        $path = $this->resolvePathFor($type);
         // dd(File::allFiles($path), $path);
         $classes = collect(File::allFiles($path))
             ->map(function ($file) {
@@ -147,7 +173,33 @@ class InteractionReflectionLoader
                 );
 
                 return $class;
-            })
+            });
+        // ->filter(function ($strClass) use ($type) {
+        //     $class = new ReflectionClass($strClass);
+
+        //     return !$class->isAbstract()
+        //         && $class->implementsInterface(InteractionHandler::class)
+        //         && $class->isSubclassOf($this->resolveAbstraction($type));
+        // });
+        $resolvedCount = count($classes);
+        if (!$classes->count()) {
+            // $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
+        }
+
+        // $this->hephaestus->log("Found <fg=cyan>{$resolvedCount}</> classes meting filtering conditions in {$path}");
+
+        return $classes;
+    }
+
+    /**
+     * Used to resolve handlers classes for a given type
+     * @return Collection<string>,
+     **/
+    public function extractClassesFor(HandledInteractionType $type): Collection
+    {
+        $pathName = $this->resolvePathFor($type);
+
+        return $this->extractClassesFromPath($pathName)
             ->filter(function ($strClass) use ($type) {
                 $class = new ReflectionClass($strClass);
 
@@ -155,19 +207,46 @@ class InteractionReflectionLoader
                     && $class->implementsInterface(InteractionHandler::class)
                     && $class->isSubclassOf($this->resolveAbstraction($type));
             });
+    }
+
+    public function extractClassesFromPath(string $pathName): Collection
+    {
+        $classes = collect()
+            ->map(function ($file) {
+                $relativePath = str_replace(
+                    Str::finish(app_path(), DIRECTORY_SEPARATOR),
+                    '',
+                    $file->getPathname()
+                );
+
+                $folders = Str::beforeLast(
+                    $relativePath,
+                    DIRECTORY_SEPARATOR
+                ) . DIRECTORY_SEPARATOR;
+
+                $className = Str::after($relativePath, $folders);
+
+                $class = app()->getNamespace() . str_replace(
+                    ['/', '.php'],
+                    ['\\', ''],
+                    $folders . $className
+                );
+
+                return $class;
+            });
         $resolvedCount = count($classes);
         if (!$classes->count()) {
-            $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
+            // $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
         }
 
-        $this->hephaestus->log("Found <fg=cyan>{$resolvedCount}</> classes meting filtering conditions in {$path}");
+        // $this->hephaestus->log("Found <fg=cyan>{$resolvedCount}</> classes meting filtering conditions in {$path}");
 
         return $classes;
     }
 
     public function bind(HandledInteractionType $type)
     {
-        $this->hephaestus->log("Binding {$type->name}");
+        // $this->hephaestus->log("Binding {$type->name}");
         switch ($type) {
             case HandledInteractionType::APPLICATION_COMMAND:
                 /**
@@ -178,7 +257,7 @@ class InteractionReflectionLoader
 
                 break;
             default:
-                $this->hephaestus->log("Cannot bind {$type->name}. Unimplementend.");
+                // $this->hephaestus->log("Cannot bind {$type->name}. Unimplementend.");
                 break;
         }
 
@@ -192,16 +271,6 @@ class InteractionReflectionLoader
         }
         return $this;
     }
-
-
-    // public function bindApplicationCommands()
-    // {
-    //     /**
-    //      * @var SlashCommandsDriver
-    //      */
-    //     with(app(SlashCommandsDriver::class))
-    //         ->register();
-    // }
 
     /**
      *
@@ -220,5 +289,21 @@ class InteractionReflectionLoader
             HandledInteractionType::MESSAGE_COMPONENT   => app(MessageComponentsDriver::class),
             default => null,
         };
+    }
+
+    public function getMiddlewares(): Collection
+    {
+        $classes = $this->extractClassesFromPath(
+            app_path('InteractionHandlers' . DIRECTORY_SEPARATOR . 'Middlewares')
+        );
+
+        $classes = $classes->merge(config('hephaestus.middlewares', null));
+
+        return $classes->filter(function ($strClass) {
+            $class = new ReflectionClass($strClass);
+
+            return !$class->isAbstract()
+                && $class->isSubclassOf(BaseInteractionMiddleware::class);
+        });
     }
 }

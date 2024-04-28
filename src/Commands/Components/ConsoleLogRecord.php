@@ -6,6 +6,7 @@ use Illuminate\Console\Contracts\NewLineAware;
 use Illuminate\Console\View\Components\Component;
 use Illuminate\Console\View\Components\Mutators;
 use Symfony\Component\Console\Output\OutputInterface;
+use Illuminate\Support\Str;
 
 use function Termwind\render;
 use function Termwind\renderUsing;
@@ -27,10 +28,16 @@ class ConsoleLogRecord extends Component
             Mutators\EnsureRelativePaths::class,
         ]);
 
+
+
+        $mutatedStringContext = $this->mutate($style['context'], [
+            Mutators\EnsureRelativePaths::class,
+        ]);
         $this->renderView('log', array_merge($style, [
             'marginTop' => $this->output instanceof NewLineAware ? max(0, 2 - $this->output->newLinesWritten()) : 1,
             'content'   => $string,
-            'appName'   => config('app.name', 'hephaestus-framework')
+            'appName'   => config('app.name', 'hephaestus-framework'),
+            'context'   => $mutatedStringContext
         ]), $verbosity);
     }
 

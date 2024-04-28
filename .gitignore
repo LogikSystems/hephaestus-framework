@@ -4,3 +4,4 @@
 /.vagrant
 /.env
 .phpunit.result.cache
+/database/database.sqlite

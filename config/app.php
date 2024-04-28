@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'version' => "0.0.1",
+    'version' => "0.0.2",
 
     /*
     |--------------------------------------------------------------------------
@@ -73,5 +73,16 @@ return [
     'log_level' => env('LOG_LEVEL', 'debug'),
 
     'verbosity_level' => env('APP_VERBOSITY', 'debug'),
+
+
+
+    // "cache" => [
+    //     'default' => 'file',
+    //     'stores' => [
+    //         'array' => [
+    //             'driver' => 'file',
+    //         ],
+    //     ],
+    // ]
 
 ];

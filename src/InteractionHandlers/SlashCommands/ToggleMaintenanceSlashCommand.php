@@ -2,32 +2,42 @@
 
 namespace Hephaestus\Framework\InteractionHandlers\SlashCommands;
 
+use Discord\Builders\Components\Option;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Builders\MessageBuilder;
+use Discord\Discord;
 use Discord\Helpers\Collection;
 use Discord\Parts\Embed\Embed;
 use Discord\Parts\Interactions\Command\Command;
+use Discord\Parts\Interactions\Command\Option as CommandOption;
 use Discord\Parts\Interactions\Interaction;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
+use Hephaestus\Framework\Events\ApplicationChangeMaintenanceMode;
+use Illuminate\Contracts\Events\Dispatcher;
 
-class HelpSlashCommand extends AbstractSlashCommand
+class ToggleMaintenanceSlashCommand extends AbstractSlashCommand
 {
     /**
      * @inheritdoc
      */
-    public string $name = "help";
+    public string $name = "toggle-maintenance";
 
     /**
      * @inheritdoc
      */
-    public string $description = "Affiche l'aide";
+    public string $description = "Passe ou non en mode maintenance.";
 
     /**
      * @inheritdoc
      */
     public int $type = Command::CHAT_INPUT;
+
+    // public array $options = [
+
+    // ];
+
 
     public function handle(InteractionDTO $interactionDTO): void
     {
@@ -35,15 +45,22 @@ class HelpSlashCommand extends AbstractSlashCommand
          * @var Hephaestus
          * */
         $hepha = app(Hephaestus::class);
+        $previous = app()->isDownForMaintenance();
 
-        $commands = $hepha->loader->hydratedHandlers(HandledInteractionType::APPLICATION_COMMAND);
-        $commandsCount = $commands->count();
-        $strCommands = $commands->map(fn (Command $command) => "- `/{$command->name}` : {$command->description}")->join("\n");
+        config(['hephaestus.maintenance' =>
+            !$previous
+        ]);
+        $now = app()->isDownForMaintenance();
+
+        $prev_mode = $previous ? "ON" : "OFF";
+        $mode = $now ? "ON" : "OFF";
+        // dump($prev_mode, $mode, app()->isDownForMaintenance());
+        app(Dispatcher::class)->dispatch(new ApplicationChangeMaintenanceMode($now, $previous));
 
         $interactionDTO->messageBuilder->addEmbed(
-            new Embed($hepha->discord, [
+            new Embed($interactionDTO->discord, [
                 "title" => "Don't worry i'm here",
-                "description" => $strCommands,
+                "description" => "Maintenance mode was `{$prev_mode}` and is now `{$mode}`",
                 "color" => 15844367,
                 "fields" => new Collection([]),
             ])
