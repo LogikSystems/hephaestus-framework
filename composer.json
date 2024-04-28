@@ -1,4 +1,5 @@
 {
+    "version": "0.0.0-alpha",
     "name": "logiksystems/hephaestus-framework",
     "description": "The Hephaestus Framework.",
     "keywords": [
