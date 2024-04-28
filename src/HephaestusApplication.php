@@ -33,7 +33,9 @@ extends LaravelZeroApplication
         );
         $this->singleton(HephaestusApplication::class, fn() => $this);
 
+
         $this->afterBootstrapping(GitVersionServiceProvider::class, function() {
+
 
 
             $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
