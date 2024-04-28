@@ -15,12 +15,6 @@ $app = new Hephaestus\Framework\HephaestusApplication(
     base_path: dirname(__DIR__),
 );
 
-/** **/
-$app->singleton(
-    \Hephaestus\Framework\HephaestusApplication::class,
-    fn() => $app,
-);
-
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
