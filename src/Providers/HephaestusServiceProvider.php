@@ -66,9 +66,13 @@ class HephaestusServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->publishes([
-            $this->helperConfigPathName('discord.php') => config_path('discord.php'),
-        ], 'hephaestus-config');
+        $this->wrapPublishConfigs(
+            "app",
+            "discord",
+            "hephaestus",
+            "logging"
+        );
+
 
         $this->publishes([
             $this->packageRootPathName('Dockerfile')            => base_path('Dockerfile'),
@@ -84,5 +88,22 @@ class HephaestusServiceProvider extends ServiceProvider
             \Hephaestus\Framework\Commands\BootCommand::class,
             \Hephaestus\Framework\Commands\ClearLogsCommand::class
         ]);
+    }
+
+    public function wrapPublishConfig(string $normalizedAlias)
+    {
+        $filename = "{$normalizedAlias}.php";
+        $this->publishes([
+            $this->helperConfigPathName($filename) => config_path($filename),
+        ], "hephaestus-config-{$normalizedAlias}");
+    }
+
+    /**
+     *
+     */
+    public function wrapPublishConfigs(string ...$normalizedAlias) {
+        foreach($normalizedAlias as $alias) {
+            $this->wrapPublishConfig($alias);
+        }
     }
 }
