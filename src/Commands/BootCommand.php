@@ -3,6 +3,7 @@
 namespace Hephaestus\Framework\Commands;
 
 use Discord\Parts\Interactions\Interaction;
+use Exception;
 use HelpCommand;
 use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\Hephaestus;

@@ -7,12 +7,14 @@ use Discord\Builders\MessageBuilder;
 use Discord\Helpers\Collection as DiscordCollection;
 use Discord\Parts\Embed\Embed;
 use Discord\Parts\Interactions\Interaction;
+use Hephaestus\Framework\Contracts\BaseInteractionMiddleware;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\Events\DiscordInteractionEvent;
 use Hephaestus\Framework\Hephaestus;
 use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\InteractionReflectionLoader;
+use Hephaestus\Framework\InteractsWithLoggerProxy;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Pipeline\Pipeline;
@@ -22,6 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DiscordInteractionEventListener
 {
+    use InteractsWithLoggerProxy;
 
     public function __construct(
         public Hephaestus $hephaestus,
@@ -37,7 +40,7 @@ class DiscordInteractionEventListener
          */
         $output = app(OutputInterface::class);
 
-        $this->hephaestus->log("Received event", Level::Info);
+        $this->log("info", "Received event", [__METHOD__]);
 
 
         // ? Speculations :
@@ -68,23 +71,28 @@ class DiscordInteractionEventListener
             HandledInteractionType::MODAL_SUBMIT
         ];
 
-        if(!in_array($handledType, $acknowledgeable)) {
+        if (!in_array($handledType, $acknowledgeable)) {
             return $event->interaction->user->sendMessage(MessageBuilder::new()->setContent("Désolé je peux pas encore"));
         }
 
         $handler = $this->hephaestus->loader->getDriver($handledType)->find($event->interaction);
 
-        $extractedMessageBuilder = $pipeline
+        $middlewares = $this->interactionReflectionLoader
+            ->getMiddlewares()
+            ->toArray();
+
+        $pipeline
             ->send($dto)
-            ->pipe(
-                ...$this->interactionReflectionLoader->getMiddlewares()
-            )
+            ->pipe(...$middlewares)
+            ->via('handle')
             ->then(
                 function (InteractionDTO $interactionDTO) use ($event, $handler) {
-                    $this->hephaestus->log("Appropriate handler if resolved  called, or not failed,  for {$event->getType()->name}:{$event->interaction->id}");
                     $handler->handle($interactionDTO);
                 }
             );
+
+            // dump()
+
         $event->interaction->respondWithMessage($dto->messageBuilder);
     }
 }

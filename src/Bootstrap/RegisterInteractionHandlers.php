@@ -3,9 +3,11 @@
 namespace Hephaestus\Framework\Bootstrap;
 
 use Exception;
+use Hephaestus\Framework\Events\ApplicationChangeMaintenanceMode;
 use Hephaestus\Framework\Events\DiscordInteractionEvent;
 use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\InteractionReflectionLoader;
+use Hephaestus\Framework\Listeners\ApplicationChangeMaintenanceModeListener;
 use Hephaestus\Framework\Listeners\DiscordInteractionEventListener;
 use Illuminate\Contracts\Events\Dispatcher as EventsDispatcher;
 use Illuminate\Events\Dispatcher;
@@ -42,6 +44,8 @@ class RegisterInteractionHandlers implements BootstrapperContract {
         $dispatcher = $app[Dispatcher::class];
 
         $dispatcher->listen(DiscordInteractionEvent::class, DiscordInteractionEventListener::class);
+
+        $dispatcher->listen(ApplicationChangeMaintenanceMode::class, ApplicationChangeMaintenanceModeListener::class);
 
     }
 

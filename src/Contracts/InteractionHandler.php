@@ -5,6 +5,7 @@ namespace Hephaestus\Framework\Contracts;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
+use Hephaestus\Framework\InteractsWithLoggerProxy;
 
 interface InteractionHandler {
 
@@ -15,4 +16,7 @@ interface InteractionHandler {
      */
     public function handle(InteractionDTO $interaction): void;
 
+    public function getDiscriminator(): string;
+
+    public function getDiscriminatorAttributeName(): string;
 }

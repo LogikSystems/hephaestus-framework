@@ -13,17 +13,20 @@ use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event;
 use Hephaestus\Framework\Events\DiscordInteractionEvent;
 use Hephaestus\Framework\Listeners\DiscordInteractionEventListener;
+use Illuminate\Console\Concerns\InteractsWithIO;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\Event as FacadesEvent;
 use Illuminate\Support\Facades\Log;
 use Monolog\Level;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
 use React\EventLoop\LoopInterface;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableResourceStream;
 use React\Stream\WritableStreamInterface;
+use Stringable;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 
@@ -32,7 +35,7 @@ use function React\Promise\all;
 
 class Hephaestus
 {
-    // use HasLog;
+    use InteractsWithLoggerProxy;
 
 
 
@@ -64,14 +67,7 @@ class Hephaestus
     public static function make(
         ?OutputInterface $output = null
     ): self {
-        return new static(
-            command: $output
-        );
-    }
-
-    public function setOutput(OutputInterface $output)
-    {
-        $this->command = $output;
+        return new self();
     }
 
 
@@ -81,14 +77,10 @@ class Hephaestus
 
     public function connect(): void
     {
+        $this->log("info", "Logging in...", [__METHOD__]);
 
-        $this->log("Logging in...");
-
-
-        // dd(getenv());
-        // dd(config('discord'));
         $loggerChannelNameForDiscord = config("discord.logger") ?? "null";
-        // dd($loggerChannelNameForDiscord);
+
         $discordLoggerChannelConfig = config("logging.channels.{$loggerChannelNameForDiscord}");
         $this->discord = new Discord([
             'token'         => $this->getToken(),
@@ -97,7 +89,7 @@ class Hephaestus
             'logger'        => Log::build($discordLoggerChannelConfig),
             // 'loop'      => \React\EventLoop\Factory::create(),
         ]);
-        $this->log("Logged in.");
+        $this->log("info", "Logged in.", [__METHOD__]);
 
         $this->registerStream();
         // var_dump(self::getContainerCacheKey(), Cache::get(join(".", [self::getContainerCacheKey(),"APPLICATION_COMMAND"])));
@@ -119,7 +111,7 @@ class Hephaestus
             // dd($msg->getRelatedHandlers()->first());
 
             //register events here
-            $this->log("<bg=cyan> DiscordPHP is ready </>", Level::Info);
+            $this->log("info", "<bg=cyan> DiscordPHP is ready </>");
             // $this->cacheInteractionHandlers();
             // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
 
@@ -127,35 +119,14 @@ class Hephaestus
                 ->then(function () {
                     // * Bind our entrypoint
                     $this->discord->on(Event::INTERACTION_CREATE, function (Interaction $interaction, Discord $discord) {
-                        $this->log("Dispatching event through Laravel event dispatcher");
+                        $this->log("info", "Dispatching event through Laravel event dispatcher");
                         dump(get_class($discord), get_class($interaction));
                         $event = new DiscordInteractionEvent($interaction, $discord);
                         FacadesEvent::dispatch($event);
-                        $this->log("Dispatched event through Laravel event dispatcher");
+                        $this->log("info", "Dispatched event through Laravel event dispatcher");
                     });
                 });
-
-            // $this->discord->guilds->get("id", 1230346340933042269) #SDA
-            //     ->channels
-            //     ->get("id", 1230346340933042272)
-            //     ->sendMessage(
-            //         MessageBuilder::new()
-            //             ->setContent("Test")
-            //             ->addComponent(
-            //                 ActionRow::new()
-            //                     ->addComponent(
-            //                         Button::new(Button::STYLE_PRIMARY, "azeaze")
-            //                             ->setLabel("Test")
-            //                     )
-            //             )
-            //     );
-
         });
-
-
-        // $this->discord->getLoop()->addPeriodicTimer(5, function () {
-        //     $this->command->writeln("<fg=red>test</>");
-        // });
     }
 
     public function beforeDisconnection(): void
@@ -165,7 +136,7 @@ class Hephaestus
     public function disconnect(): void
     {
         $this->discord->close(true);
-        $this->log("Goodbye.");
+        $this->log("info", "Goodbye.");
     }
 
     public function getToken()
@@ -175,7 +146,7 @@ class Hephaestus
 
     public function registerApplicationSlashCommands(): void
     {
-        $this->log("Reloading application slash commands");
+        $this->log("info", "Reloading application slash commands");
         /**
          * @var SlashCommandsDriver $slashCommands
          */
@@ -188,7 +159,7 @@ class Hephaestus
      */
     public function registerStream(): self
     {
-        $this->log("Registering stream");
+        $this->log("info", "Registering stream");
         if (windows_os()) {
             return $this;
         }
@@ -204,41 +175,41 @@ class Hephaestus
     /**
      * Send a message to the console.
      */
-    public function log(string $message, LogLevel|Level|null $level = Level::Debug, ?array $context = []): void
-    {
-        if ($level instanceof string) {
-            $level = Level::fromName($level);
-        }
+    // public function log(string $message, LogLevel|Level|null $level = Level::Debug, ?array $context = []): void
+    // {
+    //     if ($level instanceof string) {
+    //         $level = Level::fromName($level);
+    //     }
 
-        $message = trim($message);
-        // dd(env('APP_VERBOSITY'));
-        if ($level->value >= Level::fromName(config('app.verbosity_level', 'debug'))->value) {
-            if (empty($message)) {
-                return;
-            }
+    //     $message = trim($message);
+    //     Log::log($level->name, strip_tags($message), $context);
+    //     // dd(env('APP_VERBOSITY'));
+    //     if ($level->value >= Level::fromName(config('app.verbosity_level', 'debug'))->value) {
+    //         if (empty($message)) {
+    //             return;
+    //         }
 
-            $color = match ($level->toPsrLogLevel()) {
-                LogLevel::EMERGENCY, LogLevel::CRITICAL => "red",
-                LogLevel::ALERT, LogLevel::WARNING      => "yellow",
-                LogLevel::INFO                          => "green",
-                LogLevel::DEBUG                         => "blue",
-                default                                 => "white",
-            };
+    //         $color = match ($level->toPsrLogLevel()) {
+    //             LogLevel::EMERGENCY, LogLevel::CRITICAL => "red",
+    //             LogLevel::ALERT, LogLevel::WARNING      => "yellow",
+    //             LogLevel::INFO                          => "green",
+    //             LogLevel::DEBUG                         => "blue",
+    //             default                                 => "white",
+    //         };
 
-            $timestamp = config('discord.timestamp', "Y-m-d H:i:s");
+    //         $timestamp = config('discord.timestamp', "Y-m-d H:i:s");
 
-            $config = [
-                'bgColor'   => $color,
-                'fgColor'   => 'white',
-                'level'     => $level->name,
-                'timestamp' => $timestamp ? now()->format($timestamp) : null,
-            ];
-            //
-            with(new ConsoleLogRecord($this->command))->render($config, $message);
-        }
 
-        Log::log($level->name, strip_tags($message), $context);
-    }
+    //         $config = [
+    //             'bgColor'   => $color,
+    //             'fgColor'   => 'white',
+    //             'level'     => $level->name,
+    //             'timestamp' => $timestamp ? now()->format($timestamp) : null,
+    //         ];
+    //         //
+    //         with(new ConsoleLogRecord($this->command))->render($config, $message);
+    //     }
+    // }
 
     public static function getHandlerCacheKey(HandledInteractionType $type)
     {
@@ -252,4 +223,6 @@ class Hephaestus
     {
         return config("app.name", "HEPHAESTUS-FRAMEWORK");
     }
+
+
 }

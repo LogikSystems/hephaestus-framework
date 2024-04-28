@@ -29,6 +29,8 @@ use ReflectionClass;
  */
 class InteractionReflectionLoader
 {
+    use InteractsWithLoggerProxy;
+
     public function __construct(
         public HephaestusApplication $hephaestusApplication,
     ) {
@@ -90,9 +92,25 @@ class InteractionReflectionLoader
         // dd($classes);
         // * Key to bind from vendor or namespace
         //    dd($configHandlerTypeKey, config("hephaestus.handlers.{$configHandlerTypeKey}"), $workspacePath);
+        $this->log("debug", "Before :" . $classes->count(), [__METHOD__]);
+        // try {
+            // $duplicates = $classes->map(fn ($c) => new $c)
+            //     ->duplicates(fn($class) =>$class->getDiscriminator())
+            //     ;
+            //     dump($duplicates);
+            // if($duplicates->count() > 0) {
+            //     $message = $duplicates->reduce(fn (InteractionHandler $class) => class_basename($class) . " duplicates {$class->getDiscriminatorAttributeName()} for {$class->getDiscriminator()}\n", "");
+
+            //     $this->log("critical", $message, [__METHOD__]);
+            //     // throw new Exception($message);
+            // }
+        // } catch (Exception $e) {
+
+        //     exit(-1);
+        // }
+        // $this->log("debug", "After :" . $duplicates->count(), [__METHOD__]);
 
         return $classes
-            ->unique()
             ->all();
     }
 
@@ -156,13 +174,13 @@ class InteractionReflectionLoader
 
                 return $class;
             });
-            // ->filter(function ($strClass) use ($type) {
-            //     $class = new ReflectionClass($strClass);
+        // ->filter(function ($strClass) use ($type) {
+        //     $class = new ReflectionClass($strClass);
 
-            //     return !$class->isAbstract()
-            //         && $class->implementsInterface(InteractionHandler::class)
-            //         && $class->isSubclassOf($this->resolveAbstraction($type));
-            // });
+        //     return !$class->isAbstract()
+        //         && $class->implementsInterface(InteractionHandler::class)
+        //         && $class->isSubclassOf($this->resolveAbstraction($type));
+        // });
         $resolvedCount = count($classes);
         if (!$classes->count()) {
             // $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
@@ -183,15 +201,15 @@ class InteractionReflectionLoader
 
         return $this->extractClassesFromPath($pathName)
             ->filter(function ($strClass) use ($type) {
-                    $class = new ReflectionClass($strClass);
+                $class = new ReflectionClass($strClass);
 
-                    return !$class->isAbstract()
-                        && $class->implementsInterface(InteractionHandler::class)
-                        && $class->isSubclassOf($this->resolveAbstraction($type));
-                });
+                return !$class->isAbstract()
+                    && $class->implementsInterface(InteractionHandler::class)
+                    && $class->isSubclassOf($this->resolveAbstraction($type));
+            });
     }
 
-    public function extractClassesFromPath(string $pathName) : Collection
+    public function extractClassesFromPath(string $pathName): Collection
     {
         $classes = collect()
             ->map(function ($file) {
@@ -216,7 +234,7 @@ class InteractionReflectionLoader
 
                 return $class;
             });
-            $resolvedCount = count($classes);
+        $resolvedCount = count($classes);
         if (!$classes->count()) {
             // $this->hephaestus->log("Empty path {$path}!", Level::Warning, [$path]);
         }
@@ -273,7 +291,7 @@ class InteractionReflectionLoader
         };
     }
 
-    public function getMiddlewares()
+    public function getMiddlewares(): Collection
     {
         $classes = $this->extractClassesFromPath(
             app_path('InteractionHandlers' . DIRECTORY_SEPARATOR . 'Middlewares')
@@ -281,7 +299,7 @@ class InteractionReflectionLoader
 
         $classes = $classes->merge(config('hephaestus.middlewares', null));
 
-        return $classes->filter(function ($strClass){
+        return $classes->filter(function ($strClass) {
             $class = new ReflectionClass($strClass);
 
             return !$class->isAbstract()

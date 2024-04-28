@@ -28,11 +28,19 @@ return [
     'maintenance' => env("HEPHAESTUS_IN_MAINTENANCE", false),
 
     'bypass_maintenance_guild_ids' => [
-        // 1230346340933042269,
+        1230346340933042269,
+        // 12345,
+        // 98765,
+        // 15935,
+        // 35715,
     ],
 
+    /**
+     * ORDERED ASCENDING MIDDLEWARES
+     */
     'middlewares' => [
         \Hephaestus\Framework\Middlewares\MaintenanceMiddleware::class,
+        \Hephaestus\Framework\Middlewares\SecondMiddleware::class,
     ],
 
     'drivers' => [
@@ -42,7 +50,8 @@ return [
 
     'handlers' => [
         "ApplicationCommands" => [
-            \Hephaestus\Framework\InteractionHandlers\SlashCommands\HelpSlashCommand::class
+            \Hephaestus\Framework\InteractionHandlers\SlashCommands\HelpSlashCommand::class,
+            \Hephaestus\Framework\InteractionHandlers\SlashCommands\ToggleMaintenanceSlashCommand::class,
         ],
         "MessageComponents" => []
     ]

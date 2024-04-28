@@ -11,13 +11,13 @@
 |
 */
 
-$app = new \Hephaestus\Framework\HephaestusApplication(
+$app = new Hephaestus\Framework\HephaestusApplication(
     base_path: dirname(__DIR__),
 );
 
 /** **/
 $app->singleton(
-    Hephaestus\Framework\HephaestusApplication::class,
+    \Hephaestus\Framework\HephaestusApplication::class,
     fn() => $app,
 );
 

@@ -6,6 +6,8 @@ use Closure;
 use Discord\Discord;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\SlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver;
+use Hephaestus\Framework\Bootstrap\RegisterInteractionHandlers;
+use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\InteractionReflectionLoader;
@@ -13,6 +15,7 @@ use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Collection;
 use LaravelZero\Framework\Application as LaravelZeroApplication;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 
 class HephaestusApplication
 extends LaravelZeroApplication
@@ -22,20 +25,28 @@ extends LaravelZeroApplication
 
     public function __construct(
         string $base_path,
-        public ?InteractionReflectionLoader $interactionReflectionLoader = null,
-        public ?SlashCommandsDriver $slashCommandsDriver = null,
-        public ?MessageComponentsDriver $messageComponentsDriver = null,
     ) {
         parent::__construct(
             basePath: $base_path
         );
 
-        if(is_null($interactionReflectionLoader)) {
-            $this->interactionReflectionLoader = new InteractionReflectionLoader($this);
-        }
+        $this->afterBootstrapping(RegisterInteractionHandlers::class, function() {
+            $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
+
+            $this->singleton(LoggerProxy::class, fn() => new LoggerProxy());
+
+            // $this->make(Hephaestus::class);
+        });
     }
+
+    public function __destruct()
+    {
+        $this->make(LoggerProxy::class)->log("critical", "HephaestusApplication destructor called", [__METHOD__]);
+    }
+
     public function isDownForMaintenance(): bool
     {
+        // dump("App is down for maintenance ?", config('hephaestus.maintenance'));
         return config('hephaestus.maintenance', false);
     }
     /**
@@ -50,6 +61,7 @@ extends LaravelZeroApplication
 
     /**
      *
+     * @return string
      */
     public function getCachedInteractionHandlersPath(HandledInteractionType $handledInteractionType) : string
     {

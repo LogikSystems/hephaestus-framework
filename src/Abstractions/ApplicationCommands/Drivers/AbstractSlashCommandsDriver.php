@@ -48,7 +48,7 @@ implements ISlashCommandsDriver
     {
         $collect = $this->getRelatedHandlers();
         $commandName = $interaction->data->name;
-        $this->hephaestus->log("Received <fg=blue>{$commandName}</> between: <fg=blue>" . $collect->count() . "</> interaction handlers.", Level::Debug, [$interaction]);
+        $this->hephaestus->log("debug","Received <fg=blue>{$commandName}</> between: <fg=blue>" . $collect->count() . "</> interaction handlers.", [$interaction]);
         return $collect
             ->first(fn ($c) => strcmp($c->name, $commandName) === 0);
     }
