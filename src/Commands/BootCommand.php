@@ -41,34 +41,8 @@ class BootCommand extends Command
      */
     public function handle(HephaestusApplication $hephaestusApplication, Hephaestus $hephaestus)
     {
-        // /**
-        //  * @var OutputInterface $output
-        //  */
-        // $output = app(OutputInterface::class);
-
-        // die;
-
-        // dd($hephaestusApplication);
-
-        // $this->output;
-        // dd($this->app->getBindings());
-        // $this->app->singleton(
-        //     Hephaestus::class,
-        //     fn () => Hephaestus::make($this->output)
-        // );
-        /**
-         * @var Hephaestus
-         */
-        // $hephaestus = app(Hephaestus::class);
-        // $hephaestus->setOutput($this->output);
-
-        // $hephaestus->log("Starting bot.", Level::Info);
+        $hephaestus->log("info", "Starting bot.", [__METHOD__]);
         $hephaestus->connect();
-
-        // dd($hephaestusApplication->isBooted());
-
-        // dd(new HelpCommandModel());
-
     }
 
     /**

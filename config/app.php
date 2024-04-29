@@ -1,6 +1,4 @@
 <?php
-dump(json_decode(require_once(base_path('composer.json')), true));
-
 
 return [
 

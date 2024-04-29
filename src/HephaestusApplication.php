@@ -12,8 +12,11 @@ use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\InteractionReflectionLoader;
 use Illuminate\Console\OutputStyle;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Bootstrap\RegisterFacades;
+use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Application as LaravelZeroApplication;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Providers\GitVersion\GitVersionServiceProvider;
@@ -31,19 +34,25 @@ extends LaravelZeroApplication
         parent::__construct(
             basePath: $base_path
         );
-        $this->singleton(HephaestusApplication::class, fn() => $this);
+        $this->afterBootstrapping(\Illuminate\Foundation\Bootstrap\BootProviders::class, function () {
 
-
-        $this->afterBootstrapping(GitVersionServiceProvider::class, function() {
-
-
-
-            $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
-
-            $this->singleton(LoggerProxy::class, fn() => new LoggerProxy());
-
-            // $this->make(Hephaestus::class);
+            $this->singleton('hephaestus.framework.version', function () {
+                $filePossibleLocation = with($this->make(
+                    PackageManifest::class
+                ))->vendorPath . DIRECTORY_SEPARATOR . 'logiksystems/hephaestus-framework' . DIRECTORY_SEPARATOR . 'composer.json';
+                // * If we're in an logiksystems/`hephaestus-application` skeleton `logiksystems/hephaestus-framework`:
+                if(File::isDirectory($filePossibleLocation)) {
+                    return json_decode(File::get($filePossibleLocation))['version'] ?? app('git.version');
+                }
+                // * If we're in package
+                return false;
+            });
         });
+        $this->singleton(InteractionReflectionLoader::class, fn () => new InteractionReflectionLoader($this));
+
+        $this->singleton(LoggerProxy::class, fn() => new LoggerProxy());
+
+        $this->singleton(HephaestusApplication::class, fn() => $this);
     }
 
     // public function __destruct()
