@@ -31,10 +31,7 @@ class RegisterInteractionHandlers implements BootstrapperContract {
         // TODO
         // Reload interaction handlers
         // $app->bin
-        $app->singleton(
-            InteractionReflectionLoader::class,
-            fn () => new InteractionReflectionLoader($app)
-        );
+
 
         // $app->make(Dispatcher::class)
         // $app->make(Kernel)

@@ -5,6 +5,7 @@ namespace Hephaestus\Framework\Providers;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\HephaestusApplication;
 use Hephaestus\Framework\Hephaestus;
+use Hephaestus\Framework\InteractsWithLoggerProxy;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Pipeline;
 use Illuminate\Support\ServiceProvider;
@@ -12,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class HephaestusServiceProvider extends ServiceProvider
 {
+
+    use InteractsWithLoggerProxy;
 
     private function helperConfigPathName(string $fileName) : string
     {
@@ -76,6 +79,9 @@ class HephaestusServiceProvider extends ServiceProvider
         //     return json_decode(require_once(base_path('composer.json')))->version;
         // });
 
+        $this->booted(function () {
+            $this->log("info", "Service provider booted");
+        });
         $this->wrapPublishConfigs(
             "app",
             "discord",

@@ -61,11 +61,17 @@ class InteractionReflectionLoader
             Cache::forever($key, $classes);
             return $this->load($type);
         }
+        $this->log("info", "BINDING INTERACTION HANDLERS", [__METHOD__, $existing]);
+        // collect($existing)->each(fn ($class) => dd($class));
+        foreach($existing as $fullQualifiedClassName) {
+            // $this->hephaestusApplication->bind(InteractionHandler::class, fn () => )
+            $this->hephaestusApplication->bind($fullQualifiedClassName, $fullQualifiedClassName);
 
-        // dd($existing);
+        }
+
 
         return collect($existing)
-            ->unique()
+            // ->unique()
             ->toArray();
     }
 

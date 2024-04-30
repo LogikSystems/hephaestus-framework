@@ -67,26 +67,69 @@
         <hr class="text-<?php echo $bgColor ?>">
     </div>
     <div>
-        <ul class="m-0 p-0">
-            <?php if (isset($context) && strlen($context) > 0) { ?>
+        <ul class="m-0 pb-1">
+            <?php if (!is_null($backtraces)) { ?>
                 <li>
-                    <span class="text-black mr-1">
+                    <div class="text-green mr-1">
+                        <b>
+                            <u>BACKTRACE :</u>
+                        </b>
+                    </div>
+                    <div class="mr-1">
+                        <ol>
+                            <?php
+                            foreach ($backtraces as $backtrace) {
+                            ?>
+                                <li>
+                                    <?php
+                                    if (array_key_exists('file', $backtrace)) {
+                                        echo htmlspecialchars('<fg=bright-cyan>' . $backtrace['file'] . '</>' . '<fg=white>' . ' (' . '</>');
+                                    }
+                                    ?>
+                                    <?php
+                                    if (array_key_exists('line', $backtrace)) {
+                                        echo htmlspecialchars('<fg=white>' . 'line: ' . $backtrace['line'] . '</>' . '<fg=white>' . ') ' . '</>');
+                                    }
+                                    ?>
+                                    <?php
+                                    if (array_key_exists('object', $backtrace)) {
+                                        echo htmlspecialchars('<fg=bright-cyan>' . get_class($backtrace['object']) . '</>' . '<fg=white>' . '::' . '</>');
+                                    }
+                                    ?>
+                                    <?php
+                                    if (array_key_exists('function', $backtrace)) {
+                                        echo htmlspecialchars('<fg=bright-cyan>' . $backtrace['function'] . '</>' . '<fg=white>' . '.' . '</>');
+                                    }
+                                    ?>
+                                </li>
+                            <?php
+                            }
+                            ?>
+                        </ol>
+                    </div>
+                    <hr>
+                </li>
+            <?php } ?>
+            <?php if (strlen($context) > 0) { ?>
+                <li>
+                    <span class="text-yellow mr-1">
                         <b>
                             <u>CONTEXT :</u>
                         </b>
                     </span>
-                    <span class="mr-1 text-green"><?php echo strtoupper("{$context}") ?></span>
+                    <span class="mr-1 text-yellow"><?php echo strtoupper("\\{$context}") ?></span>
                     <br>
                 </li>
             <?php } ?>
-            <?php if (isset($content)) { ?>
+
+            <?php if (!is_null($content)) { ?>
                 <li>
-                    <span class="text-black mr-1">
+                    <span class="text-white mr-1">
                         <b>
                             <u>MESSAGE :</u>
                         </b>
                     </span>
-                    <span class="text-black"><?php echo htmlspecialchars($content) ?></span>
+                    <span class="text-white"><?php echo htmlspecialchars($content) ?></span>
                 </li>
             <?php } ?>
         </ul>

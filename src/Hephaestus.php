@@ -103,30 +103,30 @@ class Hephaestus
     public function handleDiscordPHPLoop()
     {
         // $this->discord->application->commands->create(new CommandCommand($this->discord))
-        $this->discord->on('ready', function (...$args) {
-            /**
-             * @var MessageComponentsDriver $msg
-             */
-            // $msg = app(MessageComponentsDriver::class);
-            // dd($msg->getRelatedHandlers()->first());
+        // $this->discord->on('ready', function (...$args) {
+        //     /**
+        //      * @var MessageComponentsDriver $msg
+        //      */
+        //     // $msg = app(MessageComponentsDriver::class);
+        //     // dd($msg->getRelatedHandlers()->first());
 
-            //register events here
-            $this->log("info", "<bg=cyan> DiscordPHP is ready </>");
-            // $this->cacheInteractionHandlers();
-            // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
+        //     //register events here
+        //     $this->log("info", "<bg=cyan> DiscordPHP is ready </>");
+        //     // $this->cacheInteractionHandlers();
+        //     // $this->loader->bind(HandledInteractionType::APPLICATION_COMMAND);
 
-            all($this->registerApplicationSlashCommands())
-                ->then(function () {
-                    // * Bind our entrypoint
-                    $this->discord->on(Event::INTERACTION_CREATE, function (Interaction $interaction, Discord $discord) {
-                        $this->log("info", "Dispatching event through Laravel event dispatcher");
-                        dump(get_class($discord), get_class($interaction));
-                        $event = new DiscordInteractionEvent($interaction, $discord);
-                        FacadesEvent::dispatch($event);
-                        $this->log("info", "Dispatched event through Laravel event dispatcher");
-                    });
-                });
-        });
+        //     all($this->registerApplicationSlashCommands())
+        //         ->then(function () {
+        //             // * Bind our entrypoint
+        //             $this->discord->on(Event::INTERACTION_CREATE, function (Interaction $interaction, Discord $discord) {
+        //                 $this->log("info", "Dispatching event through Laravel event dispatcher");
+        //                 dump(get_class($discord), get_class($interaction));
+        //                 $event = new DiscordInteractionEvent($interaction, $discord);
+        //                 FacadesEvent::dispatch($event);
+        //                 $this->log("info", "Dispatched event through Laravel event dispatcher");
+        //             });
+        //         });
+        // });
     }
 
     public function beforeDisconnection(): void

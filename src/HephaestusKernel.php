@@ -14,6 +14,8 @@ class HephaestusKernel extends Kernel {
         \Illuminate\Foundation\Bootstrap\HandleExceptions::class,
         \LaravelZero\Framework\Bootstrap\RegisterFacades::class,
         \LaravelZero\Framework\Bootstrap\RegisterProviders::class,
+        \Hephaestus\Framework\Bootstrap\BootstrapLoggerProxy::class,
+        \Hephaestus\Framework\Bootstrap\BootstrapDiscord::class,
 
         \Hephaestus\Framework\Bootstrap\RegisterInteractionHandlers::class,
 

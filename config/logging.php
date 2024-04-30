@@ -1,9 +1,14 @@
 <?php
 
+use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Formatter\OutputFormatterStyleStack;
+use Symfony\Component\Console\Helper\DebugFormatterHelper;
 
 return [
 
@@ -49,11 +54,22 @@ return [
     */
 
     'channels' => [
+        // 'discord' => [
+        //     'driver' => 'custom',
+        //     'via' => \Hephaestus\Framework\Logs\DiscordLogger::class,
+        //     'suffix' => env('DISCORD_LOG_SUFFIX', 'Laravel Log'), // Message title suffix
+        //     'webhook' => env('DISCORD_LOG_WEBHOOK', "https://discord.com/api/webhooks/1234539125281919081/jCqHfcEuOPZjEwK9zkbwTXXmjjSlsw6uhRbq8WTwDgpNIDdyIOlb1F0vNbohwUOsFT4Y"), // e.g. https://discordapp.com/api/webhooks/...
+        //     'level' => env('DISCORD_LOG_LEVEL', 'debug'), // You can choose from: emergency, alert, critical, error, warning, notice, info and debug
+        //     'context' => env('DISCORD_LOG_CONTEXT', true), // Enable this if you want to receive the full context of an error, usually useless
+        //     'environment' => env('DISCORD_LOG_ENVIRONMENT', 'development'), // Enable logging only for environment ['production', 'staging', 'local']
+        //     'message' => env('DISCORD_LOG_MESSAGE', false), // Here you can put extra message or tag role or person via @personName
+        // ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => [
                 // "stdout",
-                "daily",
+                // "daily",
                 "single",
             ],
             'ignore_exceptions' => false,
@@ -61,14 +77,14 @@ return [
 
         'single' => [ # Used for discordphp bot's logging
             'driver' => 'single',
-            'path' => storage_path('logs/'.env("APP_NAME", null).'.log'),
+            'path' => storage_path('logs/' . env("APP_NAME", null) . '.log'),
             // 'tap' => [App\Logging\HephaestusFormatter::class],
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
         'daily' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/'.env("APP_NAME", null).'.log'),
+            'path' => storage_path('logs/' . env("APP_NAME", null) . '.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             // 'formatter' => App\Logging\HephaestusFormatter::class,
             'days' => 14,
@@ -126,7 +142,7 @@ return [
             'driver'    => 'monolog',
             'level'     => env('LOG_LEVEL', 'debug'),
             'handler'   => StreamHandler::class,
-            'formatter' => LineFormatter::class,
+            'formatter' => DebugFormatterHelper::class,
             'with' => [
                 'stream' => 'php://stdout',
             ],

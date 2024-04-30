@@ -11,6 +11,7 @@ use Discord\Parts\Embed\Embed;
 use Discord\Parts\Interactions\Command\Command;
 use Discord\Parts\Interactions\Interaction;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
+use Hephaestus\Framework\InteractionReflectionLoader;
 
 class HelpSlashCommand extends AbstractSlashCommand
 {
@@ -32,16 +33,15 @@ class HelpSlashCommand extends AbstractSlashCommand
     public function handle(InteractionDTO $interactionDTO): void
     {
         /**
-         * @var Hephaestus
+         * @var InteractionReflectionLoader
          * */
-        $hepha = app(Hephaestus::class);
-
-        $commands = $hepha->loader->hydratedHandlers(HandledInteractionType::APPLICATION_COMMAND);
+        $loader = app(InteractionReflectionLoader::class);
+        $commands = $loader->hydratedHandlers(HandledInteractionType::APPLICATION_COMMAND);
         $commandsCount = $commands->count();
         $strCommands = $commands->map(fn (Command $command) => "- `/{$command->name}` : {$command->description}")->join("\n");
 
         $interactionDTO->messageBuilder->addEmbed(
-            new Embed($hepha->discord, [
+            new Embed($this->discord, [
                 "title" => "Don't worry i'm here",
                 "description" => $strCommands,
                 "color" => 15844367,

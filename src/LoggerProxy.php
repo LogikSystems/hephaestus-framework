@@ -59,26 +59,21 @@ class LoggerProxy implements LoggerInterface
 
     private function writeLog($level, $message, $context)
     {
-        // __METHOD__
-        $method_name = collect($context)
-            ->filter(fn ($value) => is_string($value))
-            ->first(function (string $value) {
-                return count(explode("::", $value)) == 2;
-            });
         $logLevel = Level::fromName($level);
         $minimumLevelForStdout = Level::fromName(config('app.verbosity_level', 'debug'));
 
         $output = $this->getOutput();
         $logger = $this->getLogger();
+
         if (!is_null($logger)) {
-            $logger->log($level, strip_tags($message), $context);
+            $logger->log($level, strip_tags($message), $context['other_context'] ?? []);
         }
         if (
             !is_null($output) &&
             $logLevel->value >= $minimumLevelForStdout->value
-        ) {
+            ) {
 
-            $color = match ($logLevel->toPsrLogLevel()) {
+                $color = match ($logLevel->toPsrLogLevel()) {
                 LogLevel::EMERGENCY, LogLevel::CRITICAL => "red",
                 LogLevel::ALERT, LogLevel::WARNING      => "yellow",
                 LogLevel::INFO                          => "green",
@@ -87,10 +82,11 @@ class LoggerProxy implements LoggerInterface
             };
 
             $timestamp = config('discord.timestamp', "Y-m-d H:i:s");
-
+            // dd($context['backtrace'][1]);
             $config = [
                 'maintenance'   => app()->isDownForMaintenance(),
-                'context'       => $method_name,
+                'context'       => $context['dev_log_context'] ?? null,
+                'backtraces'    => $context['backtrace'] ?? null,
                 'bgColor'       => $color,
                 'fgColor'       => 'white',
                 'level'         => $logLevel->name,
