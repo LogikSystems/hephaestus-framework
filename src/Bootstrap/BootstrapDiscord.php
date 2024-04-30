@@ -6,13 +6,20 @@ use Discord\Discord;
 use Exception;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
 use Hephaestus\Framework\HephaestusApplication;
+use Hephaestus\Framework\HephaestusKernel;
 use Hephaestus\Framework\LoggerProxy;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\PackageManifest;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Application;
 use LaravelZero\Framework\Contracts\BootstrapperContract;
+use React\Stream\ReadableResourceStream;
+use React\Stream\ReadableStreamInterface;
+use React\Stream\WritableResourceStream;
 
-class BootstrapDiscord implements BootstrapperContract {
+class BootstrapDiscord implements BootstrapperContract
+{
 
 
     /**
@@ -20,7 +27,7 @@ class BootstrapDiscord implements BootstrapperContract {
      */
     public function bootstrap(Application $app): void
     {
-        if(!$app instanceof \Hephaestus\Framework\HephaestusApplication) {
+        if (!$app instanceof \Hephaestus\Framework\HephaestusApplication) {
             throw new Exception("Cannot bootstrap a non Hephaestus Application.");
         }
 
@@ -49,6 +56,36 @@ class BootstrapDiscord implements BootstrapperContract {
         $app->afterResolving(Discord::class, fn () => app(LoggerProxy::class)->log('info', 'Resolving discord'));
 
         // $app->bind(AbstractSlashCommand::class, );
-    }
 
+        /**
+         * @var Discord $discord
+         */
+        $discord = $app->make(Discord::class);
+
+        $app->singleton(
+            ReadableResourceStream::class,
+            fn () => new ReadableResourceStream(STDIN, $app->make(Discord::class)->getLoop())
+        );
+        $app->singleton(
+            WritableResourceStream::class,
+            fn () => new WritableResourceStream(STDOUT, $app->make(Discord::class)->getLoop())
+        );
+        $app->make(ReadableResourceStream::class)->on('data', function ($data) use ($app) {
+            $app->make(WritableResourceStream::class)->write('> ');
+            if(strlen($data) <= 1) {
+                return;
+            }
+            /**
+             * @var Artisan $artisan
+             */
+            $artisan = $app->make(Kernel::class);
+
+            try {
+                $artisan->call($data);
+
+            } catch (Exception $e) {
+                $app->make(LoggerProxy::class)->log('critical', $e->getMessage(), [__METHOD__, $e]);
+            }
+        });
+    }
 }

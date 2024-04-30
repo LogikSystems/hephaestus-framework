@@ -2,6 +2,7 @@
 
 namespace Hephaestus\Framework\Listeners;
 
+use Discord\Discord;
 use Discord\Parts\User\Activity;
 use Hephaestus\Framework\Events\ApplicationChangeMaintenanceMode;
 use Hephaestus\Framework\Hephaestus;
@@ -14,14 +15,14 @@ class ApplicationChangeMaintenanceModeListener
     public function handle(ApplicationChangeMaintenanceMode $event)
     {
         /**
-         * @var Hephaestus|null $hephaestus
+         * @var Discord|null $discord
          */
-        $hephaestus = app()->make(Hephaestus::class);
+        $discord = app()->make(Discord::class);
 
         $this->log("debug", "Application is " . ($event->newValue ? "going into" : "exiting from") . " maintenance mode.", [__METHOD__]);
-        // dump(get_class($hephaestus->discord));
+        // dump(get_class($discord));
         $strWhetherInMaintenance = config("app.name") . " " . ($event->newValue ? "in maintenance" : "working");
-        $activity = $hephaestus->discord->getFactory()->create(
+        $activity = $discord->getFactory()->create(
             Activity::class,
             [
                 'name'      => $strWhetherInMaintenance,
@@ -29,6 +30,6 @@ class ApplicationChangeMaintenanceModeListener
             ]
 
         );
-        $hephaestus->discord->updatePresence($activity, $event->newValue);
+        $discord->updatePresence($activity, $event->newValue);
     }
 }

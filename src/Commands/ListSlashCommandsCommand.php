@@ -2,7 +2,7 @@
 
 namespace Hephaestus\Framework\Commands;
 
-
+use Discord\Discord;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Repository\Interaction\GlobalCommandRepository;
@@ -33,7 +33,7 @@ class ListSlashCommandsCommand extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(Discord $discord)
     {
         /**
          * @var Hephaestus
