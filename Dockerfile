@@ -53,7 +53,7 @@ RUN apt-get update \
 # RUN echo '[\[\e[92m\]\D{%d}\[\e[0m\]/\[\e[92m\]\D{%m}\[\e[0m\]/\[\e[32m\]\D{%Y}\[\e[0m\]-\[\e[92;1m\]\t\[\e[0m\]][\[\e[92;1m\]\u\[\e[0m\]@\[\e[96;1m\]\h\[\e[0m\]|\[\e[96m\]\l\[\e[0m\]][\[\e[92m\]\w\[\e[0m\]][$(git branch --show-current 2>/dev/null)]\$' >  /home/$APP_PHP_SUPERVISOR_USER/.bashrc
 
 
-RUN echo 'export PS1="[\[\e[92m\]\D{%d}\[\e[0m\]/\[\e[92m\]\D{%m}\[\e[0m\]/\[\e[32m\]\D{%Y}\[\e[0m\]-\[\e[92;1m\]\D{%H:%M:%S}\[\e[0m\]][\[\e[92;1m\]\u\[\e[0m\]@\[\e[96;1m\]\h\[\e[0m\]|\[\e[96m\]\l\[\e[0m\]][\[\e[92m\]\w\[\e[0m\]][$(git branch --show-current 2>/dev/null)]\$ "' >> /etc/bash.bashrc
-
+RUN echo "PS1='[\[\e[92m\]\D{%d}\[\e[0m\]/\[\e[92m\]\D{%m}\[\e[0m\]/\[\e[32m\]\D{%Y}\[\e[0m\]-\[\e[92;1m\]\D{%H:%M:%S}\[\e[0m\]][\[\e[92;1m\]\u\[\e[0m\]@\[\e[96;1m\]\h\[\e[0m\]|\[\e[96m\]\l\[\e[0m\]][\[\e[92m\]\w\[\e[0m\]][\$(git branch --show-current 2>/dev/null)]\$ '" \
+    > /home/$APP_PHP_SUPERVISOR_USER/.bashrc
 RUN chown -R $APP_PHP_SUPERVISOR_USER /home/$APP_PHP_SUPERVISOR_USER
 USER $APP_PHP_SUPERVISOR_USER
