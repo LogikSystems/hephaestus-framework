@@ -20,7 +20,7 @@ abstract class AbstractInteractionDriver implements InteractionDriver
 
     public function __construct(
         public InteractionReflectionLoader $interactionReflectionLoader,
-        public Discord $discord
+        public ?Discord $discord = null,
     )
     {
         // dd($interactionReflectionLoader);

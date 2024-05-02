@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Illuminate\Log\Logger;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Monolog\Level;
 use Psr\Log\LoggerInterface;
@@ -87,11 +89,12 @@ class LoggerProxy implements LoggerInterface
                         Arr::join([
                             Carbon::now()->format(config('discord.timestamp', 'd-m-Y H:i:s')),
                             $level,
-                            trim(strip_tags($message))
+                            trim(strip_tags($message)),
+                            PHP_EOL
                         ], " ")
                     ))
                     > 150
-                    ? substr($message, 0, 147) . "..."
+                    ? substr($message, 0, 146) . "..." . PHP_EOL
                     : $message)
             );
             // $output->write($this->buffered->fetch());

@@ -8,7 +8,7 @@ return [
     /**
      *
      */
-    'default' => 'file',
+    'default' => 'array',
 
     /**
      *

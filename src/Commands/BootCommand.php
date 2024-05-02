@@ -22,6 +22,7 @@ use Illuminate\Console\Signals;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
 use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -53,8 +54,7 @@ class BootCommand extends Command
      */
     public function handle(Discord $discord)
     {
-        $this->log("info", "Logging discord", [__METHOD__]);
-
+        // $this->log("info", "Logging discord", [__METHOD__]);
 
         // $discord->getLoop()->addPeriodicTimer(5, $callback);
     }

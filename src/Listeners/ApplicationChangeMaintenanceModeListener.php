@@ -26,14 +26,14 @@ class ApplicationChangeMaintenanceModeListener
             Activity::class,
             [
                 'name'      => $strWhetherInMaintenance,
-                'type'      => Activity::TYPE_LISTENING,
+                'type'      => Activity::TYPE_WATCHING,
             ]
 
         );
 
-        $progressbar = app('consoleoutput.section_haut.progressbar');
-        $progressbar->finish();
-        $progressbar->setMessage($inMaintenance = app()->isDownForMaintenance() ? " BOT IS UNDER MAINTENANCE 🟠 " : " BOT IS WORKING 🟢 ");
+        // $progressbar = app('consoleoutput.section_haut.progressbar');
+        // $progressbar->finish();
+        app('consoleoutput.section_haut')->overwrite($inMaintenance = app()->isDownForMaintenance() ? " BOT IS UNDER MAINTENANCE 🟠 " : " BOT IS WORKING 🟢 ");
 
         $discord->updatePresence($activity, $event->newValue);
     }

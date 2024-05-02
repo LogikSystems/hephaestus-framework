@@ -58,8 +58,9 @@ class InteractionReflectionLoader
 
         if ($force || is_null($existing)) {
             $classes = $this->getClasses($type);
-            Cache::flush();
+            Cache::forget($key);
             Cache::forever($key, $classes);
+
             return $this->load($type, false);
         }
         $this->log("info", "BINDING INTERACTION HANDLERS", [__METHOD__, $existing]);

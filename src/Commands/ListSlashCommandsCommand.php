@@ -6,8 +6,10 @@ use Discord\Discord;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Repository\Interaction\GlobalCommandRepository;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use Hephaestus\Framework\InteractionReflectionLoader;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 class ListSlashCommandsCommand extends Command
 {
@@ -33,23 +35,13 @@ class ListSlashCommandsCommand extends Command
      *
      * @return mixed
      */
-    public function handle(Discord $discord)
+    public function handle(AbstractSlashCommandsDriver $slashCommandsDriver)
     {
-        /**
-         * @var Hephaestus
-         */
-        $hephaestus = app(Hephaestus::class);
-        // $hephaestus->setOutput($this->output);
-
-        /**
-         * @var ISlashCommandsDriver driver
-         */
-        $driver = app(ISlashCommandsDriver::class);
-
         // $hephaestus->command->writeln("caca");
         // dd($driver->hephaestus->loader->extractClasses(HandledInteractionType::APPLICATION_COMMAND));
-
-        $this->drawCommandTable($hephaestus);
+        $commands = $slashCommandsDriver->getCommandsByName(true);
+        dd($commands);
+        $this->drawCommandTable($commands);
 
         // $hephaestus->discord = new Discord([
         //     'token'     => config('discord.token'),
@@ -81,27 +73,17 @@ class ListSlashCommandsCommand extends Command
         // });
     }
 
-    public function drawCommandTable(Hephaestus $hephaestus)
+    public function drawCommandTable(Collection $commands)
     {
-
-        /**
-         * @var ISlashCommandsDriver
-         */
-        $slashCommandDriver = app(ISlashCommandsDriver::class);
-
-        /**
-         * @var InteractionReflectionLoader
-         */
-        $loader = app(Hephaestus::class)->loader;
 
         // dd($loader->getClasses($slashCommandDriver->getHandledInteractionType()));
 
-        $slashCommandDriverCommands = $slashCommandDriver
-            ->getCommandsByName()
+        $slashCommandsTableData = $commands
             ->map(fn ($c) => ["Command Name" => $c->name, "Description" => $c->description])
-            ->sortBy("Command Name", SORT_STRING, SORT_ASC);
+            ->sortBy("Command Name", SORT_STRING, SORT_ASC)
+            ->toArray();
 
-        $this->output->table(["Command Name", "Description"], $slashCommandDriverCommands->toArray());
+        $this->output->table(["Command Name", "Description"], $slashCommandsTableData);
     }
 
 

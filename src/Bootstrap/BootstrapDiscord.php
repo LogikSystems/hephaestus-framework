@@ -13,8 +13,11 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Laravel\Prompts\Output\BufferedConsoleOutput;
 use LaravelZero\Framework\Application;
 use LaravelZero\Framework\Contracts\BootstrapperContract;
+use Monolog\Handler\StreamHandler;
 use React\Stream\DuplexResourceStream;
 use React\Stream\ReadableResourceStream;
 use React\Stream\ReadableStreamInterface;
@@ -42,12 +45,18 @@ class BootstrapDiscord implements BootstrapperContract
         if (!$app instanceof \Hephaestus\Framework\HephaestusApplication) {
             throw new Exception("Cannot bootstrap a non Hephaestus Application.");
         }
-
-        $app->singleton(Discord::class, function () use ($app) {
+        $stream = fopen(storage_path('logs/discord.php.log'), 'w');
+        $app->singleton(Discord::class, function () use ($app, $stream) {
 
             $discord = new Discord([
                 ...$app['config']['discord'],
-                "logger" => app(LoggerProxy::class),
+                "logger" => Log::build([
+                    "driver"    => "monolog",
+                    "handler"   => StreamHandler::class,
+                    "with" => [
+                        "stream" => $stream,
+                    ]
+                ]),
             ]);
 
             return $discord;
@@ -67,56 +76,47 @@ class BootstrapDiscord implements BootstrapperContract
 
         $app->afterResolving(Discord::class, fn () => app(LoggerProxy::class)->log('info', 'Resolving discord'));
 
-        // $app->bind(AbstractSlashCommand::class, );
-
-
-
-        // $consoleOutputInterface = new ConsoleOutput();
-        // dd($consoleOutputInterface);
-
         /**
          * @var Discord $discord
          */
         $discord = $app->make(Discord::class);
-        // $second = new ReadableResourceStream(, $discord->getLoop());
-
-
-
         /**
-        //  * @var Buffered
+         * @var BufferedConsoleOutput
          */
-
-        $readableResourceStream = new ReadableResourceStream(STDIN, $discord->getLoop());
-        $writableResourceStream = new WritableResourceStream(STDOUT, $discord->getLoop());
-        $app->singleton(
-            ReadableResourceStream::class,
-            fn () => $readableResourceStream
+        $console = app('consoleoutput');
+        // dump($console->getStream());
+        $loop = $discord->getLoop();
+        $readableResourceStream = new ReadableResourceStream(STDIN, $loop);
+        $writableResourceStream = new WritableResourceStream(STDOUT, $loop);
+        // $readableResourceStream = new ReadableResourceStream(fopen(storage_path('logs/discord.php.log'), 'r'), $discord->getLoop());
+        $readableResourceStream->pipe($writableResourceStream, []);
+        $stdio = new \Clue\React\Stdio\Stdio(
+            loop: $loop,
+            input: $readableResourceStream,
+            output: $writableResourceStream,
+            readline: null,
         );
-        $app->singleton(
-            WritableResourceStream::class,
-            fn () => $writableResourceStream
-        );
+        $stdio->setPrompt("> ");
 
-        // $writableResourceStream->on('drain', function () use ($app, $writableResourceStream) {
-        //     dd("drain");
-        // });
+        $app->singleton('app.stdio', fn () => $stdio);
+
 
         $section_haut = $app->make('consoleoutput.section_haut');
         $section_bas = $app->make('consoleoutput.section_bas');
-        // Make users/developers able to type in STDIN and
-        // interpret this data as it's an Artisan command
-        $readableResourceStream->on('data', function ($data) use ($app) {
+
+        $stdio->on('data', function ($data) use ($app, &$stdio, $writableResourceStream) {
+
             if (strlen($data = ($data = trim($data))) <= 1) {
                 return -1;
             }
 
             $artisan = $app->make(Kernel::class);
             try {
-                $outputSection = $app->make('consoleoutput.temp');
+                // $outputSection = $app->make('consoleoutput.temp');
 
-                $artisan->call($data, [], $outputSection);
+                $artisan->call($data, [], $app->make('consoleoutput.section_bas'));
             } catch (Exception $e) {
-                $app->make(LoggerProxy::class)->log('critical', '<fg=red>'.$e->getMessage().'</>', [__METHOD__, $e]);
+                $app->make(LoggerProxy::class)->log('critical', '<fg=red>' . $e->getMessage() . '</>', [__METHOD__, $e]);
             }
         });
     }

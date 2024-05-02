@@ -14,6 +14,7 @@ use Hephaestus\Framework\Bootstrap\RegisterInteractionHandlers;
 use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
+use Hephaestus\Framework\Events\ApplicationChangeMaintenanceMode;
 use Hephaestus\Framework\Events\DiscordInteractionEvent;
 use Hephaestus\Framework\InteractionReflectionLoader;
 use Illuminate\Console\Command;
@@ -23,12 +24,15 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Bootstrap\RegisterFacades;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use LaravelZero\Framework\Application as LaravelZeroApplication;
 use Illuminate\Support\Str;
 use LaravelZero\Framework\Providers\GitVersion\GitVersionServiceProvider;
 use Symfony\Component\Console\Logger\ConsoleLogger;
+
+use function React\Promise\all;
 
 class HephaestusApplication
 extends LaravelZeroApplication
@@ -51,14 +55,16 @@ extends LaravelZeroApplication
 
     }
 
-    // public function __destruct()
-    // {
-    //     $this->make(LoggerProxy::class)->log("critical", "HephaestusApplication destructor called", [__METHOD__]);
-    // }
-
     public function isDownForMaintenance(): bool
     {
         return config('hephaestus.maintenance', false);
+    }
+
+    public function toggleDownForMaintenance(): void
+    {
+        $old_value = $this->isDownForMaintenance();
+        $this['config']['hephaestus.maintenance'] = !$old_value;
+        Event::dispatch(new ApplicationChangeMaintenanceMode(!$old_value));
     }
     /**
      *
@@ -89,6 +95,13 @@ extends LaravelZeroApplication
      */
     public function reloadSlashCommands()
     {
-        $this->make(AbstractSlashCommandsDriver::class)->register(force: true);
+        if (($in_maintenance_on_start = $this->isDownForMaintenance() === false)) {
+            $this->toggleDownForMaintenance();
+        }
+        all(
+            $this->make(AbstractSlashCommandsDriver::class)
+                ->register(force: true)
+        )
+            ->then(fn () => $in_maintenance_on_start ? $this->toggleDownForMaintenance() : "");
     }
 }

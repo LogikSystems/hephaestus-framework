@@ -5,7 +5,6 @@ namespace Hephaestus\Framework;
 use LaravelZero\Framework\Kernel;
 
 use Illuminate\Contracts\Events\Dispatcher;
-use LaravelZero\Framework\Commands\Command;
 
 class HephaestusKernel extends Kernel
 {
@@ -38,13 +37,19 @@ class HephaestusKernel extends Kernel
         \Hephaestus\Framework\Commands\BootCommand::class,
         \Hephaestus\Framework\Commands\RegisterCommandsCommand::class,
         \Hephaestus\Framework\Commands\ListSlashCommandsCommand::class,
+        \Hephaestus\Framework\Commands\HeartbeatCommand::class,
+
+        \Hephaestus\Framework\Commands\ClearLogsCommand::class,
+
     ];
 
     /**
      * Global interactions middlewares:
      * @var string[] $commands
      */
-    protected $middlewares = [];
+    protected $middlewares = [
+        \Hephaestus\Framework\Middlewares\MaintenanceMiddleware::class,
+    ];
 
     protected $router;
 

@@ -9,6 +9,8 @@ use Laravel\Prompts\Output\BufferedConsoleOutput as OutputBufferedConsoleOutput;
 use Laravel\Prompts\Output\ConsoleOutput;
 use LaravelZero\Framework\Application;
 use LaravelZero\Framework\Contracts\BootstrapperContract;
+use React\EventLoop\LoopInterface;
+use React\Stream\WritableResourceStream;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Termwind\HtmlRenderer;
@@ -26,14 +28,12 @@ class BootstrapConsoleOutput implements BootstrapperContract
             throw new Exception("Cannot bootstrap a non Hephaestus Application.");
         }
 
-        /**
-         * @var ConsoleOutput The console output
-         */
+
 
          /**
          * @var ConsoleOutput The console output
          */
-        $bufferedConsoleOutput = app(ConsoleOutput::class);
+        $bufferedConsoleOutput = app(BufferedConsoleOutput::class);
 
         $app->singleton(
             'consoleoutput', fn () => $bufferedConsoleOutput,
@@ -72,5 +72,20 @@ class BootstrapConsoleOutput implements BootstrapperContract
         $app->singleton(
             'consoleoutput.section_bas', fn () => $section_bas,
         );
+
+        // $section_input = $bufferedConsoleOutput->section();
+        // $section_input->setMaxHeight(1);
+
+        // $stdio = new \Clue\React\Stdio\Stdio(
+        //     loop: null,
+        //     input: null,
+        //     output: null,
+        //     readline: null,
+        // );
+
+        // $app->singleton('app.stdio', $stdio);
+        // $stdio->addInput("> ");
+        // die;
+        // $bufferedConsoleOutput->
     }
 }
