@@ -5,12 +5,16 @@ namespace Hephaestus\Framework\Providers;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\HephaestusApplication;
 use Hephaestus\Framework\Hephaestus;
+use Hephaestus\Framework\InteractsWithLoggerProxy;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Pipeline;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class HephaestusServiceProvider extends ServiceProvider
 {
+
+    use InteractsWithLoggerProxy;
 
     private function helperConfigPathName(string $fileName) : string
     {
@@ -41,24 +45,20 @@ class HephaestusServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+
         $this->mergeConfigFrom(
             $this->helperConfigPathName('app.php'),
-            "hephaestus-app"
+            "app"
+        );
+        $this->mergeConfigFrom(
+            $this->helperConfigPathName('hephaestus.php'),
+            "hephaestus"
         );
 
         $this->mergeConfigFrom(
             $this->helperConfigPathName('discord.php'),
-            "hephaestus-discord"
+            "discord"
         );
-
-        $this->app->singleton(Hephaestus::class, fn () => \Hephaestus\Framework\Hephaestus::make(
-            output: app(OutputInterface::class),
-        ));
-
-        $this->app->singleton(ISlashCommandsDriver::class, function () {
-            $className = config('hephaestus.drivers.APPLICATION_COMMAND');
-            return app($className, ['hephaestus' => app(Hephaestus::class)]);
-        });
     }
 
     /**
@@ -66,6 +66,9 @@ class HephaestusServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->booted(function () {
+            $this->log("info", "Service provider booted");
+        });
         $this->wrapPublishConfigs(
             "app",
             "discord",
@@ -82,12 +85,6 @@ class HephaestusServiceProvider extends ServiceProvider
         $this->publishes([
             $this->packageRootPathName('resources/views/components') => base_path('resources/views/components')
         ], 'hephaestus-views');
-
-        $this->commands([
-            \Hephaestus\Framework\Commands\ListSlashCommandsCommand::class,
-            \Hephaestus\Framework\Commands\BootCommand::class,
-            \Hephaestus\Framework\Commands\ClearLogsCommand::class
-        ]);
     }
 
     public function wrapPublishConfig(string $normalizedAlias)
@@ -95,7 +92,7 @@ class HephaestusServiceProvider extends ServiceProvider
         $filename = "{$normalizedAlias}.php";
         $this->publishes([
             $this->helperConfigPathName($filename) => config_path($filename),
-        ], "hephaestus-config-{$normalizedAlias}");
+        ], "hephaestus-configs");
     }
 
     /**

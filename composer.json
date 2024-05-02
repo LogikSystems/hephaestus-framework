@@ -1,4 +1,5 @@
 {
+    "version": "0.0.0-alpha",
     "name": "logiksystems/hephaestus-framework",
     "description": "The Hephaestus Framework.",
     "keywords": [
@@ -26,6 +27,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2.0",
+        "clue/stdio-react": "^2.6",
         "illuminate/database": "^10.0",
         "illuminate/log": "^10.0.0",
         "laravel-zero/framework": "^10.0.0",

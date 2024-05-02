@@ -1,5 +1,6 @@
 services:
     hephaestus:
+        hostname: 'forge'
         volumes:
             - '.:/home/${APP_PHP_SUPERVISOR_USER}/hephaestus'
         build:
@@ -13,8 +14,10 @@ services:
         tty: true
         entrypoint:
           - "/bin/bash"
+        ports:
+        - 8080:8080
         networks:
-            - hephaestus
+            - hephaestus-network
 networks:
-    hephaestus:
+    hephaestus-network:
         driver: bridge

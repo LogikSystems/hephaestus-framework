@@ -12,17 +12,19 @@ use Discord\Parts\Interactions\Command\Command;
 use Discord\Parts\Interactions\Interaction;
 use Hephaestus\Framework\DataTransferObjects\InteractionDTO;
 
-class HelpSlashCommand extends AbstractSlashCommand
+class RandomAppCommand extends AbstractSlashCommand
 {
     /**
      * @inheritdoc
      */
-    public string $name = "autrehelpmaiscestpourledebug";
+    public string $name = "roll";
 
     /**
      * @inheritdoc
      */
     public string $description = "Affiche l'aide";
+
+
 
     /**
      * @inheritdoc

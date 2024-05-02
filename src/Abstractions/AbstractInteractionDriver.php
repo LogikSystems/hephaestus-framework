@@ -2,23 +2,28 @@
 
 namespace Hephaestus\Framework\Abstractions;
 
+use Discord\Discord;
 use Hephaestus\Framework\Contracts\InteractionDriver;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\Hephaestus;
 use Discord\Parts\Interactions\Interaction;
+use Hephaestus\Framework\HephaestusApplication;
+use Hephaestus\Framework\InteractionReflectionLoader;
+use Hephaestus\Framework\InteractsWithLoggerProxy;
 use Illuminate\Support\Collection;
 
-abstract class AbstractInteractionDriver implements InteractionDriver{
+abstract class AbstractInteractionDriver implements InteractionDriver
+{
+
+    use InteractsWithLoggerProxy;
 
     public function __construct(
-        public ?Hephaestus $hephaestus = null,
-    ) {
-        if(is_null($hephaestus)) {
-            $this->hephaestus = app(Hephaestus::class);
-        }
-        // $this->hephaestus->log("Driver created : <fg=cyan>" . $this::class . "</>");
-        // dd($this->hephaestus);
+        public InteractionReflectionLoader $interactionReflectionLoader,
+        public ?Discord $discord = null,
+    )
+    {
+        // dd($interactionReflectionLoader);
     }
 
     /**
@@ -30,9 +35,10 @@ abstract class AbstractInteractionDriver implements InteractionDriver{
      *
      * @return Collection<InteractionHandler|null>
      */
-    public function getRelatedHandlers() : Collection|null
+    public function getRelatedHandlers(bool $force = false): Collection|null
     {
-        return $this->hephaestus->loader->hydratedHandlers($this->getHandledInteractionType());
+        $this->log("info", "Calling getRelatedHandler", [__METHOD__]);
+        return $this->interactionReflectionLoader->hydratedHandlers($this->getHandledInteractionType(), $force);
     }
 
     /**

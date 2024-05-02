@@ -23,17 +23,17 @@ class ConsoleLogRecord extends Component
      */
     public function render($style, $string, $verbosity = OutputInterface::VERBOSITY_NORMAL)
     {
+        // $this->output->writeln($string);
+        // return;
         $string = $this->mutate($string, [
             Mutators\EnsureDynamicContentIsHighlighted::class,
             Mutators\EnsureRelativePaths::class,
         ]);
 
-
-
         $mutatedStringContext = $this->mutate($style['context'], [
             Mutators\EnsureRelativePaths::class,
         ]);
-        $this->renderView('log', array_merge($style, [
+        return $this->renderView('log', array_merge($style, [
             'marginTop' => $this->output instanceof NewLineAware ? max(0, 2 - $this->output->newLinesWritten()) : 1,
             'content'   => $string,
             'appName'   => config('app.name', 'hephaestus-framework'),
@@ -47,13 +47,13 @@ class ConsoleLogRecord extends Component
      * @param  string  $view
      * @param  \Illuminate\Contracts\Support\Arrayable|array  $data
      * @param  int  $verbosity
-     * @return void
+     * @return string
      */
-    protected function renderView($view, $data, $verbosity)
+    protected function renderView($view, $data, $verbosity) : string
     {
         renderUsing($this->output);
 
-        render((string) $this->compile($view, $data), $verbosity);
+        return (string) $this->compile($view, $data);
     }
 
     /**
@@ -63,7 +63,7 @@ class ConsoleLogRecord extends Component
      * @param  array  $data
      * @return void
      */
-    protected function compile($view, $data)
+    public function compile($view, $data)
     {
         extract($data);
 

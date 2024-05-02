@@ -42,27 +42,8 @@ class DiscordInteractionEventListener
 
         $this->log("info", "Received event", [__METHOD__]);
 
-
-        // ? Speculations :
-        // $DTO = [
-        //     'interaction'   => $event->interaction,
-        //     'response'      => MessageBuilder::new(),
-        // ];
-        // $pipeline->send($DTO)->then();
-        //
-
         $dto = new InteractionDTO($event->interaction->data, $event->discord);
         $pipeline = new Pipeline($this->hephaestusApplication);
-
-
-        // ? Expectations :
-        // if(is_null($handler)){
-        //     return "toz";
-        // }
-        // if not :
-        // $middlewareAndHandler = [];
-        // pipeMiddlewareAndHandlers
-        //
 
         $handledType = $event->getType();
         $acknowledgeable = [
@@ -75,23 +56,20 @@ class DiscordInteractionEventListener
             return $event->interaction->user->sendMessage(MessageBuilder::new()->setContent("Désolé je peux pas encore"));
         }
 
-        $handler = $this->hephaestus->loader->getDriver($handledType)->find($event->interaction);
-
+        $handler = $this->hephaestusApplication
+            ->make(InteractionReflectionLoader::class)
+            ->getDriver($handledType)
+            ->find($event->interaction);
         $middlewares = $this->interactionReflectionLoader
             ->getMiddlewares()
             ->toArray();
 
         $pipeline
+            ->setContainer($this->hephaestusApplication)
             ->send($dto)
             ->pipe(...$middlewares)
             ->via('handle')
-            ->then(
-                function (InteractionDTO $interactionDTO) use ($event, $handler) {
-                    $handler->handle($interactionDTO);
-                }
-            );
-
-            // dump()
+            ->then(fn (InteractionDTO $_dto) => $handler->handle($_dto));
 
         $event->interaction->respondWithMessage($dto->messageBuilder);
     }

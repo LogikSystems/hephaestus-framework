@@ -25,8 +25,7 @@ return [
     | number MAJOR.MINOR.PATCH when an update happens: https://semver.org.
     |
     */
-
-    'version' => "0.0.2",
+    'version' => config('git.version', 'unreleased'),
 
     /*
     |--------------------------------------------------------------------------

@@ -22,6 +22,8 @@
  */
 return [
 
+    'backtrace' => false,
+
     /**
      * Maintenance mode
      */
@@ -29,10 +31,13 @@ return [
 
     'bypass_maintenance_guild_ids' => [
         1230346340933042269,
-        // 12345,
-        // 98765,
-        // 15935,
-        // 35715,
+    ],
+
+    /**
+     * Webhooks to log all interactions that your bot received / handles / failed on
+     */
+    'webhooks' => [
+        'https://discord.com/api/webhooks/1234539125281919081/jCqHfcEuOPZjEwK9zkbwTXXmjjSlsw6uhRbq8WTwDgpNIDdyIOlb1F0vNbohwUOsFT4Y',
     ],
 
     /**
@@ -44,7 +49,8 @@ return [
     ],
 
     'drivers' => [
-        'APPLICATION_COMMAND' => \Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\SlashCommandsDriver::class,
+        'APPLICATION_COMMAND' =>
+        \Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\SlashCommandsDriver::class,
         'MESSAGE_COMPONENT' => \Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver::class,
     ],
 
