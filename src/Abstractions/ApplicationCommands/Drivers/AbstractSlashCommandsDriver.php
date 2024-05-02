@@ -23,10 +23,10 @@ implements ISlashCommandsDriver
     use InteractsWithLoggerProxy;
 
 
-    public function __construct(public Discord $discord)
-    {
-
-    }
+    // public function __construct()
+    // {
+    //     parent::__construct();
+    // }
 
     /**
      * @inheritdoc
@@ -40,9 +40,9 @@ implements ISlashCommandsDriver
      * Get a collection of commands by name
      * @return Collection<string:Command>
      */
-    public function getCommandsByName(): Collection
+    public function getCommandsByName(bool $force = false): Collection
     {
-        return $this->getRelatedHandlers()
+        return $this->getRelatedHandlers(force: $force)
             ->flatMap(fn (AbstractSlashCommand $class) => [$class->name => $class]);
     }
 
@@ -50,7 +50,7 @@ implements ISlashCommandsDriver
     /**
      * @inheritdoc
      */
-    public abstract function register(): array;
+    public abstract function register(bool $force = false): array;
 
     /**
      * @inheritdoc

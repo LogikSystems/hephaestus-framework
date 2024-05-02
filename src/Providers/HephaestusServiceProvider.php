@@ -59,15 +59,6 @@ class HephaestusServiceProvider extends ServiceProvider
             $this->helperConfigPathName('discord.php'),
             "discord"
         );
-
-        $this->app->singleton(Hephaestus::class, fn () => \Hephaestus\Framework\Hephaestus::make(
-            output: app(OutputInterface::class),
-        ));
-
-        $this->app->singleton(ISlashCommandsDriver::class, function () {
-            $className = config('hephaestus.drivers.APPLICATION_COMMAND');
-            return app($className, ['hephaestus' => app(Hephaestus::class)]);
-        });
     }
 
     /**
@@ -75,10 +66,6 @@ class HephaestusServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Collection::macro("version", function () {
-        //     return json_decode(require_once(base_path('composer.json')))->version;
-        // });
-
         $this->booted(function () {
             $this->log("info", "Service provider booted");
         });
@@ -98,12 +85,6 @@ class HephaestusServiceProvider extends ServiceProvider
         $this->publishes([
             $this->packageRootPathName('resources/views/components') => base_path('resources/views/components')
         ], 'hephaestus-views');
-
-        $this->commands([
-            \Hephaestus\Framework\Commands\ListSlashCommandsCommand::class,
-            \Hephaestus\Framework\Commands\BootCommand::class,
-            \Hephaestus\Framework\Commands\ClearLogsCommand::class
-        ]);
     }
 
     public function wrapPublishConfig(string $normalizedAlias)

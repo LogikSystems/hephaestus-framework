@@ -1,5 +1,6 @@
 services:
     hephaestus:
+        hostname: 'forge'
         volumes:
             - '.:/home/${APP_PHP_SUPERVISOR_USER}/hephaestus'
         build:

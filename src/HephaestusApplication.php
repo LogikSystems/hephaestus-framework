@@ -6,6 +6,7 @@ use Closure;
 use Discord\Discord;
 use Discord\Parts\Interactions\Interaction;
 use Discord\WebSockets\Event as DiscordWebsocketEvent;
+use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\SlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver;
@@ -43,27 +44,11 @@ extends LaravelZeroApplication
             basePath: $base_path
         );
 
-        $this->singleton(LoggerProxy::class, fn () => new LoggerProxy());
-
-
-
-        $this->afterBootstrapping(\Hephaestus\Framework\Bootstrap\BootstrapDiscord::class, function () {
-
-        });
-
-
-        $this->afterBootstrapping(\Illuminate\Foundation\Bootstrap\BootProviders::class, function () {
-            //
-        });
-
         $this->singleton(HephaestusApplication::class, fn () => $this);
-        $this->singleton(
-            InteractionReflectionLoader::class
-        );
 
-        $this->singleton(
-            ISlashCommandsDriver::class, fn () => $this->make($this['config']['hephaestus.drivers']['APPLICATION_COMMAND'])
-        );
+        // dd($this->make(InteractionReflectionLoader::class));
+        // $this->booted(fn() => dd($this->make(AbstractSlashCommandsDriver::class)));
+
     }
 
     // public function __destruct()
@@ -73,7 +58,6 @@ extends LaravelZeroApplication
 
     public function isDownForMaintenance(): bool
     {
-        // dump("App is down for maintenance ?", config('hephaestus.maintenance'));
         return config('hephaestus.maintenance', false);
     }
     /**
@@ -105,6 +89,6 @@ extends LaravelZeroApplication
      */
     public function reloadSlashCommands()
     {
-        $this->slashCommandsDriver->register();
+        $this->make(AbstractSlashCommandsDriver::class)->register(force: true);
     }
 }

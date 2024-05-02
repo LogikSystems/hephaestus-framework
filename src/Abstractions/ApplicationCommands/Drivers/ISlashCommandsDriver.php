@@ -16,12 +16,12 @@ interface ISlashCommandsDriver extends InteractionDriver {
      *
      * @return array<ExtendedPromiseInterface>
      */
-    public function register() : array;
+    public function register(bool $force = false) : array;
 
     /**
      * Get a collection of commands by name
      * @return Collection<string:Command>
      */
-    public function getCommandsByName(): Collection;
+    public function getCommandsByName(bool $force = false): Collection;
 
 }

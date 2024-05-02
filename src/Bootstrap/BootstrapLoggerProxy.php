@@ -8,6 +8,7 @@ use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\LoggerProxy;
 use LaravelZero\Framework\Application;
 use LaravelZero\Framework\Contracts\BootstrapperContract;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class BootstrapLoggerProxy implements BootstrapperContract {
 
@@ -20,6 +21,6 @@ class BootstrapLoggerProxy implements BootstrapperContract {
         if(!$app instanceof \Hephaestus\Framework\HephaestusApplication) {
             throw new Exception("Cannot bootstrap a non Hephaestus Application.");
         }
-        $app->singleton(LoggerProxy::class, fn () => new LoggerProxy());
+        $app->singleton(LoggerProxy::class, fn () => new LoggerProxy(new BufferedOutput()));
     }
 }

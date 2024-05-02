@@ -2,8 +2,10 @@
 
 namespace Hephaestus\Framework\Contracts;
 
+use Discord\Http\DriverInterface;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Discord\Parts\Interactions\Interaction;
+use Hephaestus\Framework\InteractionReflectionLoader;
 
 interface InteractionDriver {
 

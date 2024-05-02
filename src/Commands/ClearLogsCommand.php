@@ -29,14 +29,15 @@ class ClearLogsCommand extends Command
      */
     public function handle()
     {
-        Log::info("Clearing log files. Goodbye.");
+        $this->output->writeln("<fg=green>Logs cleared !</>");
+        // Log::info("Clearing log files. Goodbye.");
         exec(
             implode(
                 " ",
                 ["rm", "-f", storage_path("logs/*.log")]
             )
         );
-        Log::info("Logs have been cleared.");
+        // Log::info("Logs have been cleared.");
     }
 
     /**
@@ -47,6 +48,6 @@ class ClearLogsCommand extends Command
      */
     public function schedule(Schedule $schedule): void
     {
-        // $schedule->command(static::class)->everyMinute();
+
     }
 }

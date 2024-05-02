@@ -2,16 +2,24 @@
 
 namespace Hephaestus\Framework;
 
+use Carbon\Carbon;
 use Hephaestus\Framework\Commands\Components\ConsoleLogRecord;
 use Illuminate\Log\Logger;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Monolog\Level;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class LoggerProxy implements LoggerInterface
 {
+    public function __construct()
+    {
+    }
+
     public function emergency(string|\Stringable $message, array $context = []): void
     {
         $this->writeLog('emergency', $message, $context);
@@ -63,6 +71,7 @@ class LoggerProxy implements LoggerInterface
         $minimumLevelForStdout = Level::fromName(config('app.verbosity_level', 'debug'));
 
         $output = $this->getOutput();
+        // $data = $this->buffered->fetch();
         $logger = $this->getLogger();
 
         if (!is_null($logger)) {
@@ -71,34 +80,47 @@ class LoggerProxy implements LoggerInterface
         if (
             !is_null($output) &&
             $logLevel->value >= $minimumLevelForStdout->value
-            ) {
+        ) {
+            $this->getOutput()->writeln(
+                (strlen($message =
+                    trim(
+                        Arr::join([
+                            Carbon::now()->format(config('discord.timestamp', 'd-m-Y H:i:s')),
+                            $level,
+                            trim(strip_tags($message))
+                        ], " ")
+                    ))
+                    > 150
+                    ? substr($message, 0, 147) . "..."
+                    : $message)
+            );
+            // $output->write($this->buffered->fetch());
+            // $color = match ($logLevel->toPsrLogLevel()) {
+            //     LogLevel::EMERGENCY, LogLevel::CRITICAL => "red",
+            //     LogLevel::ALERT, LogLevel::WARNING      => "yellow",
+            //     LogLevel::INFO                          => "green",
+            //     LogLevel::DEBUG                         => "blue",
+            //     default                                 => "white",
+            // };
 
-                $color = match ($logLevel->toPsrLogLevel()) {
-                LogLevel::EMERGENCY, LogLevel::CRITICAL => "red",
-                LogLevel::ALERT, LogLevel::WARNING      => "yellow",
-                LogLevel::INFO                          => "green",
-                LogLevel::DEBUG                         => "blue",
-                default                                 => "white",
-            };
-
-            $timestamp = config('discord.timestamp', "Y-m-d H:i:s");
-            // dd($context['backtrace'][1]);
-            $config = [
-                'maintenance'   => app()->isDownForMaintenance(),
-                'context'       => $context['dev_log_context'] ?? null,
-                'backtraces'    => $context['backtrace'] ?? null,
-                'bgColor'       => $color,
-                'fgColor'       => 'white',
-                'level'         => $logLevel->name,
-                'timestamp'     => $timestamp ? now()->format($timestamp) : null,
-            ];
-            with(new ConsoleLogRecord($output))->render($config, $message);
+            // $timestamp = config('discord.timestamp', "Y-m-d H:i:s");
+            // // dd($context['backtrace'][1]);
+            // $config = [
+            //     'maintenance'   => app()->isDownForMaintenance(),
+            //     'context'       => $context['dev_log_context'] ?? null,
+            //     'backtraces'    => $context['backtrace'] ?? null,
+            //     'bgColor'       => $color,
+            //     'fgColor'       => 'white',
+            //     'level'         => $logLevel->name,
+            //     'timestamp'     => $timestamp ? now()->format($timestamp) : null,
+            // ];
+            // $html = with(new ConsoleLogRecord($output))->render($config, $message);
         }
     }
 
     public function getOutput(): OutputInterface|null
     {
-        return app(OutputInterface::class);
+        return app('consoleoutput.section_bas');
     }
     public function getLogger(): LoggerInterface|null
     {

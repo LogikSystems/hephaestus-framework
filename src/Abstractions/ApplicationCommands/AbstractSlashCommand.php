@@ -31,13 +31,14 @@ implements InteractionHandler
             get_class_vars($this::class),
         );
         parent::__construct(app(Discord::class), $attributes);
-        $name = class_basename($this);
-        $this->log("debug", "Constructing <fg=cyan>{$this->name}</>", [__METHOD__]);
+        $className = class_basename($this);
+        $this->log("debug", "Constructing <fg=green>{$className}</> <fg=cyan>{$this->name}</>", [__METHOD__]);
     }
 
     public function __destruct()
     {
-        $this->log("debug", "Destructing <fg=cyan>{$this->name}</>", [__METHOD__]);
+        $className = class_basename($this);
+        $this->log("debug", "Destructing <fg=red>{$className}</> <fg=cyan>{$this->name}</>", [__METHOD__]);
     }
 
     /**

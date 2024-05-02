@@ -48,7 +48,7 @@ class InteractionReflectionLoader
         }
     }
 
-    public function load(HandledInteractionType $type): array
+    public function load(HandledInteractionType $type, bool $force = false): array
     {
         $key = $this->hephaestusApplication->getCachedInteractionHandlersPath($type);
 
@@ -56,10 +56,11 @@ class InteractionReflectionLoader
 
         // dd($existing, $key);
 
-        if (is_null($existing)) {
+        if ($force || is_null($existing)) {
             $classes = $this->getClasses($type);
+            Cache::flush();
             Cache::forever($key, $classes);
-            return $this->load($type);
+            return $this->load($type, false);
         }
         $this->log("info", "BINDING INTERACTION HANDLERS", [__METHOD__, $existing]);
         // collect($existing)->each(fn ($class) => dd($class));
@@ -282,9 +283,9 @@ class InteractionReflectionLoader
      *
      * @return Collection<InteractionHandler>
      */
-    public function hydratedHandlers(HandledInteractionType $type): Collection
+    public function hydratedHandlers(HandledInteractionType $type, ?bool $force = false): Collection
     {
-        return collect($this->load($type))
+        return collect($this->load($type, $force))
             ->map(fn ($class) => app($class)); // Cast into appropriate container service
     }
 

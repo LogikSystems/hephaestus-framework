@@ -2,6 +2,7 @@
 
 namespace Hephaestus\Framework\Abstractions;
 
+use Discord\Discord;
 use Hephaestus\Framework\Contracts\InteractionDriver;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
@@ -17,9 +18,12 @@ abstract class AbstractInteractionDriver implements InteractionDriver
 
     use InteractsWithLoggerProxy;
 
-    public function __construct()
+    public function __construct(
+        public InteractionReflectionLoader $interactionReflectionLoader,
+        public Discord $discord
+    )
     {
-
+        // dd($interactionReflectionLoader);
     }
 
     /**
@@ -31,11 +35,10 @@ abstract class AbstractInteractionDriver implements InteractionDriver
      *
      * @return Collection<InteractionHandler|null>
      */
-    public function getRelatedHandlers(): Collection|null
+    public function getRelatedHandlers(bool $force = false): Collection|null
     {
         $this->log("info", "Calling getRelatedHandler", [__METHOD__]);
-        return app(InteractionReflectionLoader::class)
-            ->hydratedHandlers($this->getHandledInteractionType());
+        return $this->interactionReflectionLoader->hydratedHandlers($this->getHandledInteractionType(), $force);
     }
 
     /**

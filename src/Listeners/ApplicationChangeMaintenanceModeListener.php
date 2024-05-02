@@ -30,6 +30,11 @@ class ApplicationChangeMaintenanceModeListener
             ]
 
         );
+
+        $progressbar = app('consoleoutput.section_haut.progressbar');
+        $progressbar->finish();
+        $progressbar->setMessage($inMaintenance = app()->isDownForMaintenance() ? " BOT IS UNDER MAINTENANCE 🟠 " : " BOT IS WORKING 🟢 ");
+
         $discord->updatePresence($activity, $event->newValue);
     }
 }

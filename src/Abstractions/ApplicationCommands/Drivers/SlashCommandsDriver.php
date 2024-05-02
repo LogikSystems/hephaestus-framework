@@ -27,28 +27,31 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
     /**
      * @inheritdoc
      */
-    public function register(): array
+    public function register(bool $force = false): array
     {
         $promises = [];
         $this->log("info", "Commands repository is :", [__METHOD__, get_class($this->discord->application->commands)]);
         $globalCommandRepository = await($this->discord->application->commands->freshen());
 
+
+        $commands = $this->getCommandsByName($force);
+
         $promises[] = $this->diffDelete(
-            $this->getCommandsByName(),
-            $globalCommandRepository,
+            commandsByName: $commands,
+            globalCommandRepository: $globalCommandRepository,
         )
             ->then(
                 onFulfilled: fn () => $this->log("info", "<bg=green> Successed while updating Global Commands Repository ! </>", [__METHOD__]),
-                onRejected: fn () => $this->log("warning", "<bg=red> Failed while updating Global Commands Repository ! </>", [__METHOD__]),
+                onRejected: fn () => $this->log("critical", "<bg=red> Failed while updating Global Commands Repository ! </>", [__METHOD__]),
             );
 
         $promises[] = $this->createOrUpdate(
-            commandsByName: $this->getCommandsByName(),
+            commandsByName: $commands,
             globalCommandRepository: $globalCommandRepository,
         )
             ->then(
                 onFulfilled: fn () => $this->log("info", "<bg=green> Successed while updating Slash Commands ! </>", [__METHOD__]),
-                onRejected: fn () => $this->log("warning", "<bg=red> Failed while updating Slash Commands ! </>", [__METHOD__]),
+                onRejected: fn () => $this->log("critical", "<bg=red> Failed while updating Slash Commands ! </>", [__METHOD__]),
             );
 
         return $promises;
@@ -63,8 +66,6 @@ class SlashCommandsDriver extends AbstractSlashCommandsDriver
             $color = $is_present ? "green" : "red";
             $str = $is_present ? "Yes" : "No";
             $this->log("debug", "Checking if we have also have the {$gcr_command->name} found on GCR : {$str} <bg={$color}> {$gcr_command->name} </>.", [__METHOD__]);
-
-            // $promise = new Promise(fn () => $this->log("Je suis pas perdu."),);
 
             if (!$is_present) {
                 $promises[] = $promise = $globalCommandRepository->delete($gcr_command);

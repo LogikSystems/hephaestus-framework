@@ -26,9 +26,10 @@ use LaravelZero\Framework\Commands\Command;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function React\Async\async;
 use function React\Promise\all;
 
-class BootCommand extends Command
+class HeartbeatCommand extends Command
 {
 
     use InteractsWithLoggerProxy;
@@ -37,7 +38,7 @@ class BootCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'bot:boot';
+    protected $signature = 'bot:heartbeat';
 
     /**
      * The description of the command.
@@ -53,9 +54,8 @@ class BootCommand extends Command
      */
     public function handle(Discord $discord)
     {
-        $this->log("info", "Logging discord", [__METHOD__]);
-
-
-        // $discord->getLoop()->addPeriodicTimer(5, $callback);
+        if($discord->getLoop()) {
+            $discord->heartbeat();
+        }
     }
 }
