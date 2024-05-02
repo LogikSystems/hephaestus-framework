@@ -66,9 +66,6 @@ class HephaestusServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->booted(function () {
-            $this->log("info", "Service provider booted");
-        });
         $this->wrapPublishConfigs(
             "app",
             "discord",
