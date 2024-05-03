@@ -123,7 +123,7 @@ class LoggerProxy implements LoggerInterface
 
     public function getOutput(): OutputInterface|null
     {
-        return app('consoleoutput.section_bas');
+        return app(OutputInterface::class);
     }
     public function getLogger(): LoggerInterface|null
     {

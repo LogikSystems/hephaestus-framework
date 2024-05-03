@@ -5,12 +5,11 @@ namespace Hephaestus\Framework;
 use LaravelZero\Framework\Kernel;
 
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Support\Facades\Validator;
 
 class HephaestusKernel extends Kernel
 {
     protected $bootstrappers = [
-        \Hephaestus\Framework\Bootstrap\BootstrapConsoleOutput::class, # Provide
-
         \LaravelZero\Framework\Bootstrap\CoreBindings::class,
         \LaravelZero\Framework\Bootstrap\LoadEnvironmentVariables::class,
         \LaravelZero\Framework\Bootstrap\LoadConfiguration::class,
@@ -37,7 +36,6 @@ class HephaestusKernel extends Kernel
         \Hephaestus\Framework\Commands\BootCommand::class,
         \Hephaestus\Framework\Commands\RegisterCommandsCommand::class,
         \Hephaestus\Framework\Commands\ListSlashCommandsCommand::class,
-        \Hephaestus\Framework\Commands\HeartbeatCommand::class,
 
         \Hephaestus\Framework\Commands\ClearLogsCommand::class,
 
