@@ -25,7 +25,7 @@
     "type": "framework",
     "license": "MIT",
     "require": {
-        "php": "^8.2.0",
+        "php": "^8.1.0",
         "clue/stdio-react": "^2.6",
         "illuminate/database": "^10.0",
         "illuminate/log": "^10.0.0",
