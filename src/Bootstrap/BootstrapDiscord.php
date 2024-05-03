@@ -14,7 +14,6 @@ use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Laravel\Prompts\Output\BufferedConsoleOutput;
 use LaravelZero\Framework\Application;
 use LaravelZero\Framework\Contracts\BootstrapperContract;
 use Monolog\Handler\StreamHandler;
@@ -26,7 +25,6 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -80,44 +78,8 @@ class BootstrapDiscord implements BootstrapperContract
          * @var Discord $discord
          */
         $discord = $app->make(Discord::class);
-        /**
-         * @var BufferedConsoleOutput
-         */
-        $console = app('consoleoutput');
-        // dump($console->getStream());
         $loop = $discord->getLoop();
         $readableResourceStream = new ReadableResourceStream(STDIN, $loop);
         $writableResourceStream = new WritableResourceStream(STDOUT, $loop);
-        // $readableResourceStream = new ReadableResourceStream(fopen(storage_path('logs/discord.php.log'), 'r'), $discord->getLoop());
-        $readableResourceStream->pipe($writableResourceStream, []);
-        $stdio = new \Clue\React\Stdio\Stdio(
-            loop: $loop,
-            input: $readableResourceStream,
-            output: $writableResourceStream,
-            readline: null,
-        );
-        $stdio->setPrompt("> ");
-
-        $app->singleton('app.stdio', fn () => $stdio);
-
-
-        $section_haut = $app->make('consoleoutput.section_haut');
-        $section_bas = $app->make('consoleoutput.section_bas');
-
-        $stdio->on('data', function ($data) use ($app, &$stdio, $writableResourceStream) {
-
-            if (strlen($data = ($data = trim($data))) <= 1) {
-                return -1;
-            }
-
-            $artisan = $app->make(Kernel::class);
-            try {
-                // $outputSection = $app->make('consoleoutput.temp');
-
-                $artisan->call($data, [], $app->make('consoleoutput.section_bas'));
-            } catch (Exception $e) {
-                $app->make(LoggerProxy::class)->log('critical', '<fg=red>' . $e->getMessage() . '</>', [__METHOD__, $e]);
-            }
-        });
     }
 }

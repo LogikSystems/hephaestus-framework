@@ -3,25 +3,20 @@
 
 namespace Hephaestus\Framework;
 
-use Exception;
 use Hephaestus\Framework\Contracts\InteractionHandler;
 use Hephaestus\Framework\Enums\HandledInteractionType;
 use Hephaestus\Framework\Abstractions\AbstractInteractionDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\AbstractSlashCommandsDriver;
 use Hephaestus\Framework\Abstractions\ApplicationCommands\AbstractSlashCommand;
-use Hephaestus\Framework\Abstractions\ApplicationCommands\Drivers\ISlashCommandsDriver;
 use Hephaestus\Framework\HephaestusApplication;
 use Hephaestus\Framework\Abstractions\MessageComponents\AbstractMessageComponent;
 use Hephaestus\Framework\Abstractions\MessageComponents\Drivers\MessageComponentsDriver;
 use Hephaestus\Framework\Contracts\BaseInteractionMiddleware;
-use Hephaestus\Framework\Hephaestus;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Str;
-use Monolog\Level;
 use ReflectionClass;
 
 /**
@@ -293,7 +288,7 @@ class InteractionReflectionLoader
     public function getDriver(HandledInteractionType $type): AbstractInteractionDriver|null
     {
         return match ($type) {
-            HandledInteractionType::APPLICATION_COMMAND => app(ISlashCommandsDriver::class),
+            HandledInteractionType::APPLICATION_COMMAND => app(AbstractSlashCommandsDriver::class),
             HandledInteractionType::MESSAGE_COMPONENT   => app(MessageComponentsDriver::class),
             default => null,
         };
